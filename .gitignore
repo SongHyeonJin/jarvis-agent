@@ -1,0 +1,25 @@
+# === Gradle ===
+build/
+.gradle/
+out/
+
+# === IDE ===
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# === Java ===
+*.class
+*.jar
+*.log
+
+# === 환경 설정 (민감 정보) ===
+application-local.yml
+.env
+
+# === 기타 빌드 산출물 ===
+bin/
+target/

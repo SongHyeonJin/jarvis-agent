@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"d:\\\\jarvis-agent\\\\src\\\\main\\\\java\\\\com\\\\jarvis\" -Recurse -File | Group-Object { $_.Directory.Name } | Select-Object Name, Count | Sort-Object Count -Descending)",
+      "PowerShell(Get-ChildItem d:\\\\jarvis-agent -Name | Where-Object { $_ -match 'gradle' })",
+      "PowerShell(Start-Process -FilePath $gradle -ArgumentList \"bootRun\", \"--no-daemon\", \"--project-dir\", \"d:\\\\jarvis-agent\" -WindowStyle Hidden)",
+      "PowerShell($gradle = \"C:\\\\Users\\\\Song\\\\.gradle\\\\wrapper\\\\dists\\\\gradle-9.2.0-bin\\\\11i5gvueggl8a5cioxuftxrik\\\\gradle-9.2.0\\\\bin\\\\gradle.bat\")"
+    ]
+  }
+}
