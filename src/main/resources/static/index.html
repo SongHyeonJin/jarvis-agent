@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대현자 J.A.R.V.I.S.</title>
+<style>
+:root{
+  --bg:#000812;--panel:rgba(0,14,28,.92);--border:rgba(0,180,255,.16);
+  --cyan:#00d4ff;--cyan2:rgba(0,212,255,.20);--gold:#ffd040;--green:#00ff88;
+  --orange:#ff8800;--red:#ff3333;--purple:#8833ff;--txt:#9ed8f0;
+  --dim:rgba(158,216,240,.30);--glow:0 0 14px rgba(0,212,255,.6),0 0 40px rgba(0,212,255,.2);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Courier New',monospace;background:var(--bg);color:var(--txt);}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='80'%3E%3Cpolygon points='35,2 68,19 68,53 35,70 2,53 2,19' stroke='rgba(0,180,255,0.04)' fill='none' stroke-width='1'/%3E%3C/svg%3E");
+  background-size:70px 80px;}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.018) 3px,rgba(0,0,0,.018) 4px);}
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;}
+
+/* HEADER */
+.hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;height:48px;border-bottom:1px solid var(--border);background:rgba(0,5,12,.96);backdrop-filter:blur(10px);}
+.hdr-l{display:flex;align-items:center;gap:12px;}
+.logo{font-size:17px;font-weight:700;letter-spacing:4px;color:var(--cyan);text-shadow:var(--glow);}
+.logo-sub{font-size:9px;color:var(--dim);letter-spacing:2px;}
+.hdr-clock{font-size:11px;color:var(--dim);letter-spacing:1px;}
+.hdr-r{display:flex;align-items:center;gap:8px;font-size:11px;}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--dim);transition:all .4s;}
+.slbl{color:var(--dim);letter-spacing:1px;transition:color .4s;}
+
+[data-state=standby]   .sdot{background:var(--purple);box-shadow:0 0 7px var(--purple);animation:blink 3.5s ease-in-out infinite;}
+[data-state=standby]   .slbl{color:var(--purple);}
+[data-state=activating].sdot{background:#fff;box-shadow:0 0 18px #fff;}
+[data-state=activating].slbl{color:#fff;}
+[data-state=briefing]  .sdot{background:var(--gold);box-shadow:0 0 8px var(--gold);animation:blink 1.6s ease-in-out infinite;}
+[data-state=briefing]  .slbl{color:var(--gold);}
+[data-state=listening] .sdot{background:var(--green);box-shadow:0 0 10px var(--green);animation:blink 1s ease-in-out infinite;}
+[data-state=listening] .slbl{color:var(--green);}
+[data-state=processing].sdot{background:var(--orange);box-shadow:0 0 10px var(--orange);animation:blink .4s ease-in-out infinite;}
+[data-state=processing].slbl{color:var(--orange);}
+[data-state=speaking]  .sdot{background:var(--cyan);box-shadow:0 0 12px var(--cyan);animation:blink .55s ease-in-out infinite;}
+[data-state=speaking]  .slbl{color:var(--cyan);}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.18;}}
+
+.main{flex:1;display:flex;overflow:hidden;}
+
+/* SIDE PANELS */
+.panel{width:238px;flex-shrink:0;background:var(--panel);display:flex;flex-direction:column;
+  overflow-y:auto;padding:10px;gap:10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.pl{border-right:1px solid var(--border);}
+.pr{border-left:1px solid var(--border);}
+.sec{border:1px solid var(--border);border-radius:3px;padding:8px 10px;flex-shrink:0;}
+.stitle{font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;
+  border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:7px;}
+.row{display:flex;justify-content:space-between;align-items:flex-start;font-size:11px;padding:2px 0;color:var(--dim);}
+.ok{color:var(--green)!important;text-shadow:0 0 5px var(--green);}
+.pnote{font-size:9px;color:var(--dim);line-height:1.7;margin-top:3px;}
+.mwrap{height:5px;background:rgba(0,180,255,.07);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin:5px 0;}
+.mbar{height:100%;width:0%;background:linear-gradient(90deg,var(--purple),var(--cyan));transition:width .04s;}
+.vsel{width:100%;background:rgba(0,8,18,.9);border:1px solid var(--border);color:var(--txt);
+  font-family:inherit;font-size:9px;padding:3px 5px;border-radius:2px;margin-top:4px;cursor:pointer;}
+.vsel:focus{outline:none;border-color:var(--cyan);}
+.vsel option{background:#000c1a;color:var(--txt);}
+.tts-tag{font-size:9px;padding:2px 6px;border-radius:2px;margin-top:5px;text-align:center;letter-spacing:1px;}
+.tts-cloud{background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid var(--cyan2);}
+.tts-local{background:rgba(255,136,0,.1);color:var(--orange);border:1px solid rgba(255,136,0,.3);}
+.bw{font-size:12px;color:var(--cyan);margin-bottom:5px;}
+.bl{font-size:8px;letter-spacing:1px;color:var(--dim);margin:5px 0 2px;}
+.bi{font-size:10px;color:var(--txt);padding:2px 0 2px 7px;border-left:2px solid var(--cyan2);margin:2px 0;line-height:1.4;}
+.bn{font-size:10px;color:var(--dim);font-style:italic;}
+.sec-cg{border-color:rgba(255,136,0,.4);}
+.cglog{font-size:9px;color:var(--dim);max-height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;scrollbar-width:thin;}
+.cgi{padding:1px 0;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+.cgi-start{color:var(--cyan);}.cgi-progress{color:var(--orange);}.cgi-file{color:var(--green);}
+.cgi-error{color:var(--red);}.cgi-done{color:var(--gold);font-weight:bold;}
+.csec{flex:1;display:flex;flex-direction:column;min-height:0;}
+.clog{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.msg{display:flex;flex-direction:column;gap:1px;}
+.mrole{font-size:8px;letter-spacing:1px;color:var(--dim);}
+.mu{align-items:flex-end;}
+.mu .mrole{color:var(--cyan2);}
+.mu .mt{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.22);color:var(--cyan);
+  padding:3px 8px;border-radius:8px 8px 2px 8px;font-size:10px;text-align:right;max-width:210px;
+  white-space:pre-wrap;word-break:keep-all;overflow-wrap:break-word;}
+.ma .mt{background:rgba(0,10,22,.9);border:1px solid var(--border);color:var(--txt);
+  padding:3px 8px;border-radius:8px 8px 8px 2px;font-size:10px;max-width:210px;
+  white-space:pre-wrap;word-break:keep-all;overflow-wrap:break-word;}
+.ms .mt{color:var(--dim);font-size:9px;text-align:center;letter-spacing:1px;width:100%;border:none;background:transparent;}
+
+/* ORB CENTER */
+.oa{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.oa::before,.oa::after{content:'';position:absolute;width:72px;height:72px;pointer-events:none;border-color:rgba(0,180,255,.10);border-style:solid;}
+.oa::before{top:14px;left:14px;border-width:1px 0 0 1px;}
+.oa::after{bottom:14px;right:14px;border-width:0 1px 1px 0;}
+.inov{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(0,6,14,.94);backdrop-filter:blur(8px);}
+.sbtn{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 46px;
+  background:rgba(0,212,255,.03);border:1px solid var(--cyan);color:var(--cyan);font-family:inherit;
+  font-size:14px;letter-spacing:3px;cursor:pointer;text-transform:uppercase;
+  box-shadow:0 0 28px rgba(0,212,255,.22),inset 0 0 22px rgba(0,212,255,.04);transition:all .3s;}
+.sbtn:hover{background:rgba(0,212,255,.08);box-shadow:0 0 44px rgba(0,212,255,.38),inset 0 0 28px rgba(0,212,255,.08);}
+.ssub{font-size:10px;color:var(--dim);letter-spacing:2px;}
+.owrap{position:relative;width:420px;height:420px;display:flex;align-items:center;justify-content:center;}
+.ring{position:absolute;border-radius:50%;border:1px solid;}
+.r1{width:390px;height:390px;border-color:rgba(0,212,255,.13);border-style:dashed;animation:spinCW 55s linear infinite;}
+.r2{width:328px;height:328px;border-color:rgba(0,212,255,.10);border-style:dotted;animation:spinCCW 34s linear infinite;}
+.r3{width:268px;height:268px;border-color:rgba(0,212,255,.09);border-style:dashed;animation:spinCW 19s linear infinite;}
+@keyframes spinCW{to{transform:rotate(360deg)}}@keyframes spinCCW{to{transform:rotate(-360deg)}}
+[data-state=standby]   .r1{border-color:rgba(136,51,255,.17);}[data-state=standby] .r3{border-color:rgba(136,51,255,.11);}
+[data-state=activating].r1{border-color:rgba(255,255,255,.55);animation-duration:3s;}[data-state=activating].r2{border-color:rgba(0,212,255,.75);animation-duration:2s;}[data-state=activating].r3{border-color:rgba(255,255,255,.65);animation-duration:1.5s;}
+[data-state=briefing]  .r1{border-color:rgba(255,208,64,.20);}[data-state=briefing] .r3{border-color:rgba(255,208,64,.20);}
+[data-state=listening] .r1{border-color:rgba(0,255,136,.20);animation-duration:15s;}[data-state=listening] .r3{border-color:rgba(0,255,136,.24);animation-duration:5s;}
+[data-state=processing].r1{border-color:rgba(255,136,0,.26);animation-duration:7s;}[data-state=processing].r3{border-color:rgba(255,136,0,.28);animation-duration:2.2s;}
+[data-state=speaking]  .r1{border-color:rgba(0,212,255,.28);animation-duration:11s;}[data-state=speaking] .r3{border-color:rgba(0,212,255,.32);animation-duration:3.5s;}
+.mc{position:absolute;width:100%;height:100%;animation:spinCW 90s linear infinite;opacity:.75;}
+.orb{position:relative;z-index:10;width:162px;height:162px;border-radius:50%;
+  background:radial-gradient(circle at 37% 34%,rgba(0,212,255,.32),rgba(0,28,56,.88) 56%,rgba(0,6,14,.98));
+  box-shadow:0 0 55px rgba(0,212,255,.12),0 0 110px rgba(0,212,255,.05),inset 0 0 55px rgba(0,212,255,.04);
+  display:flex;align-items:center;justify-content:center;transition:box-shadow .5s,background .5s;}
+.orbin{width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle at 40% 37%,rgba(0,212,255,.52),rgba(0,55,110,.28) 56%,transparent);
+  animation:opulse 3.2s ease-in-out infinite;}
+.orbring{position:absolute;width:100%;height:100%;border-radius:50%;border:1px solid rgba(0,212,255,.25);animation:oexpand 3.2s ease-out infinite;}
+@keyframes opulse{0%,100%{opacity:.45;transform:scale(.87);}50%{opacity:1;transform:scale(1.1);}}
+@keyframes oexpand{0%{transform:scale(1);opacity:.38;}100%{transform:scale(1.95);opacity:0;}}
+[data-state=standby] .orb{background:radial-gradient(circle at 37% 34%,rgba(100,35,200,.26),rgba(0,6,14,.98) 68%);box-shadow:0 0 32px rgba(100,35,200,.1);}
+[data-state=standby] .orbin{background:radial-gradient(circle at 40% 37%,rgba(130,55,255,.48),transparent);animation-duration:5s;}
+[data-state=standby] .orbring{border-color:rgba(130,55,255,.18);animation-duration:5s;}
+[data-state=activating] .orb{background:radial-gradient(circle at 37% 34%,rgba(255,255,255,.78),rgba(0,212,255,.52) 34%,rgba(0,25,50,.45));box-shadow:0 0 88px rgba(0,212,255,.82),0 0 180px rgba(0,212,255,.36),inset 0 0 66px rgba(255,255,255,.28);animation:orbActivate .55s ease-out;}
+[data-state=activating] .orbin{animation-duration:.38s;}[data-state=activating] .orbring{border-color:rgba(0,212,255,.85);animation-duration:.38s;}
+@keyframes orbActivate{0%{transform:scale(.65);}60%{transform:scale(1.18);}100%{transform:scale(1);}}
+[data-state=briefing] .orb{background:radial-gradient(circle at 37% 34%,rgba(255,208,64,.44),rgba(78,38,0,.72) 56%,rgba(0,6,14,.95));box-shadow:0 0 55px rgba(255,208,64,.24);}
+[data-state=briefing] .orbin{background:radial-gradient(circle at 40% 37%,rgba(255,208,64,.65),transparent);animation-duration:2.2s;}[data-state=briefing] .orbring{border-color:rgba(255,208,64,.32);animation-duration:2.2s;}
+[data-state=listening] .orb{background:radial-gradient(circle at 37% 34%,rgba(0,255,136,.44),rgba(0,46,22,.72) 56%,rgba(0,6,14,.95));box-shadow:0 0 58px rgba(0,255,136,.26);}
+[data-state=listening] .orbin{background:radial-gradient(circle at 40% 37%,rgba(0,255,136,.65),transparent);animation-duration:1.4s;}[data-state=listening] .orbring{border-color:rgba(0,255,136,.38);animation-duration:1.4s;}
+[data-state=processing] .orb{background:radial-gradient(circle at 37% 34%,rgba(255,136,0,.44),rgba(78,34,0,.72) 56%,rgba(0,6,14,.95));box-shadow:0 0 58px rgba(255,136,0,.26);}
+[data-state=processing] .orbin{animation-duration:.72s;}[data-state=processing] .orbring{border-color:rgba(255,136,0,.4);animation-duration:.72s;}
+[data-state=speaking] .orb{background:radial-gradient(circle at 37% 34%,rgba(0,212,255,.54),rgba(0,46,76,.66) 56%,rgba(0,6,14,.95));box-shadow:0 0 68px rgba(0,212,255,.44),0 0 140px rgba(0,212,255,.18),inset 0 0 58px rgba(0,212,255,.18);}
+[data-state=speaking] .orbin{animation-duration:.88s;}[data-state=speaking] .orbring{border-color:rgba(0,212,255,.55);animation-duration:.88s;}
+.olbl{position:absolute;bottom:-34px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;white-space:nowrap;transition:color .4s,text-shadow .4s;}
+[data-state=activating] .olbl{color:#fff;text-shadow:0 0 14px #fff;}[data-state=briefing] .olbl{color:var(--gold);text-shadow:0 0 8px var(--gold);}
+[data-state=listening]  .olbl{color:var(--green);text-shadow:0 0 8px var(--green);}[data-state=processing] .olbl{color:var(--orange);text-shadow:0 0 8px var(--orange);}
+[data-state=speaking]   .olbl{color:var(--cyan);text-shadow:0 0 10px var(--cyan);}
+
+/* HUD */
+.hud{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:min(680px,80%);display:flex;flex-direction:column;align-items:stretch;gap:7px;}
+.urow{display:flex;align-items:center;gap:7px;min-height:16px;}
+.upfx{font-size:9px;letter-spacing:1px;color:var(--cyan);white-space:nowrap;flex-shrink:0;}
+#trUser{font-size:12px;color:var(--txt);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;direction:rtl;text-align:left;unicode-bidi:plaintext;}
+
+/* 2-LINE JARVIS BOX */
+.jbox{position:relative;border:1px solid var(--cyan2);background:rgba(0,5,12,.88);backdrop-filter:blur(10px);padding:10px 14px;}
+.jbox::before,.jbox::after{content:'';position:absolute;width:10px;height:10px;border-color:var(--cyan);border-style:solid;}
+.jbox::before{top:-1px;right:-1px;border-width:1px 1px 0 0;}
+.jbox::after{bottom:-1px;left:-1px;border-width:0 0 1px 1px;}
+.jtag{position:absolute;top:-8px;left:12px;font-size:8px;letter-spacing:2px;color:var(--cyan);background:var(--bg);padding:0 6px;text-shadow:0 0 8px var(--cyan);}
+.jtts{position:absolute;top:-8px;right:12px;font-size:8px;padding:0 6px;background:var(--bg);letter-spacing:1px;}
+
+/* Fixed 2-line window */
+.jwindow{height:calc(16px * 1.68 * 2);overflow:hidden;position:relative;}
+.jl{
+  height:calc(16px * 1.68);
+  line-height:1.68;
+  font-size:16px;
+  color:var(--txt);
+  overflow:hidden;
+  white-space:pre-wrap;
+  word-break:keep-all;
+  overflow-wrap:break-word;
+  display:flex;
+  align-items:center;
+}
+.jl1-style{color:rgba(158,216,240,.45);}
+
+/* Cursor blink */
+.cursor-active::after{content:'▌';color:var(--cyan);animation:blink .6s step-end infinite;font-size:14px;margin-left:1px;}
+
+/* Roll-up: new bottom line slides in from below */
+@keyframes slideUp{from{transform:translateY(calc(16px * 1.68));opacity:0;}to{transform:translateY(0);opacity:1;}}
+.jl-enter{animation:slideUp .22s ease-out forwards;}
+
+/* Processing dots */
+.pdots{display:none;align-items:center;gap:5px;height:calc(16px*1.68*2);padding-top:10px;}
+.pdots.show{display:flex;}
+.pdot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pd .9s ease-in-out infinite;}
+.pdot:nth-child(2){animation-delay:.3s;}.pdot:nth-child(3){animation-delay:.6s;}
+@keyframes pd{0%,100%{opacity:.2;transform:scale(.8);}50%{opacity:1;transform:scale(1.2);}}
+
+#wfc{width:100%;height:44px;display:block;opacity:.8;}
+
+/* FOOTER */
+.ftr{flex-shrink:0;border-top:1px solid var(--border);background:rgba(0,4,10,.96);padding:6px 20px;display:flex;align-items:center;justify-content:space-between;}
+.fst{font-size:10px;color:var(--dim);letter-spacing:1px;}
+.fhint{font-size:9px;color:var(--dim);letter-spacing:1px;}
+.fbtn{padding:4px 14px;font-family:inherit;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:2px;text-transform:uppercase;background:transparent;color:var(--red);border:1px solid var(--red);transition:all .2s;}
+.fbtn:hover{background:rgba(255,51,51,.1);box-shadow:0 0 8px rgba(255,51,51,.3);}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* CARDS SECTION — inside .oa, above .owrap */
+.cards-section{flex-shrink:0;display:none;width:min(100%,440px);padding:0 8px 14px;
+  overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+  position:relative;z-index:60;}
+.cards-row{display:flex;gap:6px;min-width:min-content;align-items:flex-start;flex-wrap:nowrap;}
+.card{flex-shrink:0;width:170px;padding:7px 10px;border-radius:3px;cursor:pointer;transition:all .2s;position:relative;}
+.card:hover{transform:translateY(-1px);}
+.card-todo{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.22);}
+.card-todo.card-done{background:rgba(0,255,136,.03);border-color:rgba(0,255,136,.15);opacity:.55;}
+.card-memo{background:rgba(255,208,64,.05);border:1px solid rgba(255,208,64,.22);}
+.card-type{font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:3px;}
+.card-title{font-size:10px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-todo .card-title{color:var(--cyan);}
+.card-todo.card-done .card-title{color:var(--dim);text-decoration:line-through;}
+.card-memo .card-title{color:var(--gold);}
+.card-sub{font-size:9px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-del{position:absolute;top:3px;right:5px;font-size:9px;color:var(--dim);cursor:pointer;opacity:0;transition:opacity .2s;background:none;border:none;padding:0;}
+.card:hover .card-del{opacity:.7;}
+.cards-add-btn{flex-shrink:0;width:32px;height:54px;background:transparent;border:1px dashed var(--border);
+  color:var(--dim);font-size:18px;cursor:pointer;border-radius:3px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.cards-add-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+/* ADD MODAL */
+.add-modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+.add-modal.show{display:flex;}
+.add-box{background:rgba(0,10,22,.97);border:1px solid var(--cyan);padding:20px 24px;min-width:320px;max-width:420px;width:90%;}
+.add-box h3{font-size:11px;letter-spacing:3px;color:var(--cyan);margin-bottom:14px;text-transform:uppercase;}
+.add-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.add-label{font-size:9px;letter-spacing:1px;color:var(--dim);}
+.add-inp{background:rgba(0,5,12,.9);border:1px solid var(--border);color:var(--txt);font-family:inherit;font-size:11px;padding:6px 8px;width:100%;border-radius:2px;}
+.add-inp:focus{outline:none;border-color:var(--cyan);}
+.add-btns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+.add-btn{padding:5px 16px;font-family:inherit;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:2px;text-transform:uppercase;border:1px solid;}
+.add-btn-ok{background:rgba(0,212,255,.1);color:var(--cyan);border-color:var(--cyan);}
+.add-btn-cancel{background:transparent;color:var(--dim);border-color:var(--border);}
+
+/* TODAY TASK BANNER — hidden, replaced by .oa cards */
+.todo-banner{display:none!important;}
+
+/* DEV DASHBOARD REPORT */
+.dev-report{background:rgba(0,8,4,.96);border:1px solid rgba(0,255,136,.22);border-radius:3px;
+  padding:9px 10px;margin-top:6px;font-size:10px;}
+.rpt-label{font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:4px;}
+.rpt-file{color:var(--green);padding:1px 0;font-size:9px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rpt-build-ok{color:var(--green);font-weight:bold;font-size:10px;margin-top:5px;}
+.rpt-build-fail{color:var(--red);font-weight:bold;font-size:10px;margin-top:5px;}
+.rpt-elapsed{color:var(--dim);font-size:8px;margin-top:3px;}
+
+/* 자막 CSS 교정 — 공백/띄어쓰기 보존 */
+.jl{white-space:pre-wrap;word-break:keep-all;overflow-wrap:break-word;overflow:hidden;}
+</style>
+</head>
+<body data-state="init">
+<div id="app">
+
+<header class="hdr">
+  <div class="hdr-l">
+    <span class="logo">J.A.R.V.I.S.</span>
+    <span class="logo-sub">대현자 프로토콜 v5.0</span>
+  </div>
+  <div class="hdr-clock" id="clock"></div>
+  <div class="hdr-r">
+    <span class="sdot"></span>
+    <span class="slbl" id="slbl">초기화</span>
+  </div>
+</header>
+
+<!-- ADD MODAL -->
+<div class="add-modal" id="addModal">
+  <div class="add-box">
+    <h3 id="addModalTitle">항목 추가</h3>
+    <div class="add-row">
+      <label class="add-label">종류</label>
+      <select class="add-inp" id="addType" onchange="onAddTypeChange()">
+        <option value="todo">할 일 (Todo)</option>
+        <option value="memo">메모 (Memo)</option>
+      </select>
+    </div>
+    <div class="add-row">
+      <label class="add-label">제목</label>
+      <input class="add-inp" id="addTitle" placeholder="제목을 입력하세요" />
+    </div>
+    <div class="add-row" id="addContentRow">
+      <label class="add-label">내용</label>
+      <textarea class="add-inp" id="addContent" rows="3" placeholder="내용 (선택사항)"></textarea>
+    </div>
+    <div class="add-row" id="addDueRow" style="display:none">
+      <label class="add-label">마감일</label>
+      <input class="add-inp" id="addDue" type="date" />
+    </div>
+    <div class="add-btns">
+      <button class="add-btn add-btn-cancel" onclick="closeAddModal()">취소</button>
+      <button class="add-btn add-btn-ok" onclick="submitAddModal()">등록</button>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+  <!-- LEFT PANEL -->
+  <aside class="panel pl">
+    <div class="sec">
+      <div class="stitle">SYSTEM STATUS</div>
+      <div class="row"><span>VOICE ENGINE</span><span id="vst">OFFLINE</span></div>
+      <div class="row"><span>AUDIO INPUT</span><span id="ast">OFFLINE</span></div>
+      <div class="row"><span>AI CORE</span><span class="ok">ONLINE</span></div>
+      <div class="row"><span>DATABASE</span><span class="ok">ONLINE</span></div>
+    </div>
+    <div class="sec">
+      <div class="stitle">AUDIO LEVEL</div>
+      <div class="mwrap"><div class="mbar" id="mbar"></div></div>
+      <div class="pnote">박수(Clap) 또는 "대현자야"로 활성화<br>[Space] 수동 활성화</div>
+    </div>
+    <div class="sec">
+      <div class="stitle">TTS ENGINE</div>
+      <div class="row"><span>모드</span><span id="ttsModeVal">—</span></div>
+      <div id="ttsModeTag" class="tts-tag tts-cloud" style="display:none">▶ OPENAI ONYX</div>
+      <div class="row" style="margin-top:6px"><span>FALLBACK VOICE</span></div>
+      <select class="vsel" id="vsel"><option>음성 로딩 중...</option></select>
+    </div>
+    <div class="sec" id="sessec" style="display:none">
+      <div class="stitle">SESSION</div>
+      <div class="row"><span>CONV ID</span><span id="cid">—</span></div>
+      <div class="row"><span>MESSAGES</span><span id="mcnt">0</span></div>
+    </div>
+    <div class="sec">
+      <div class="stitle">CONTROLS</div>
+      <div class="pnote">● 활성화: 박수 / "대현자야"<br>● 종료: "종료" / "고마워" / "그만"<br>● [Space]: 수동 활성화/종료<br>● 30초 침묵 → 대기 모드</div>
+    </div>
+  </aside>
+
+  <!-- CENTER ORB -->
+  <div class="oa">
+    <div class="inov" id="inov">
+      <button class="sbtn" id="sbtn">
+        <span>대현자 시스템 가동</span>
+        <span class="ssub">클릭하여 마이크 권한 허용</span>
+      </button>
+    </div>
+    <!-- CARDS (Todo + Memo) — .oa 내, 오브 위 -->
+    <div class="cards-section" id="cardsSection">
+      <div class="cards-row" id="cardsRow">
+        <button class="cards-add-btn" onclick="openAddModal()" title="추가">+</button>
+      </div>
+    </div>
+
+    <div class="owrap">
+      <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+      <svg class="mc" id="mc" viewBox="0 0 420 420"></svg>
+      <div class="orb" id="orb"><div class="orbin"></div><div class="orbring"></div></div>
+      <div class="olbl" id="olbl">대기 중</div>
+    </div>
+    <div class="hud">
+      <div class="urow">
+        <span class="upfx">[ 현진님 ]</span>
+        <span id="trUser"></span>
+      </div>
+      <div class="jbox">
+        <span class="jtag">J.A.R.V.I.S.</span>
+        <span class="jtts" id="jtts"></span>
+        <div class="jwindow" id="jwindow">
+          <div class="jl jl1-style" id="jl1"></div>
+          <div class="jl" id="jl2"></div>
+        </div>
+        <div class="pdots" id="pdots">
+          <div class="pdot"></div><div class="pdot"></div><div class="pdot"></div>
+        </div>
+      </div>
+      <canvas id="wfc" height="44"></canvas>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <aside class="panel pr">
+    <div class="sec sec-cg" id="cgsec" style="display:none">
+      <div class="stitle" style="display:flex;justify-content:space-between;align-items:center">
+        <span>AUTO DEV REPORT</span>
+        <button id="cgCancelBtn" onclick="cancelDevJob()" style="display:none;font-size:8px;padding:1px 6px;background:transparent;color:var(--red);border:1px solid var(--red);cursor:pointer;font-family:inherit;letter-spacing:1px;border-radius:2px">취소</button>
+      </div>
+      <div class="cglog" id="cglog"></div>
+      <div id="devReport"></div>
+    </div>
+    <div class="sec" id="bsec" style="display:none">
+      <div class="stitle">TODAY'S BRIEFING</div>
+      <div class="bw" id="bw"></div>
+      <div id="btodos"></div>
+      <div id="bscheds"></div>
+    </div>
+    <div class="sec csec">
+      <div class="stitle">COMMUNICATION LOG</div>
+      <div class="clog" id="clog"></div>
+    </div>
+  </aside>
+</main>
+
+
+
+<footer class="ftr">
+  <span class="fst" id="fst">마이크 권한을 허용하여 시스템을 시작하세요</span>
+  <span class="fhint">SPACE = 수동 활성화</span>
+  <button class="fbtn" id="stopbtn" style="display:none"
+    onclick="deactivate('네, 현진님. 언제든지 부르십시오.')">세션 종료</button>
+</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const ST = {INIT:'init',STANDBY:'standby',ACTIVATING:'activating',
+  BRIEFING:'briefing',LISTENING:'listening',PROCESSING:'processing',SPEAKING:'speaking'};
+
+// Wake word — rolling buffer + multiple phonetic variants
+const WAKE_PATS = [
+  /대현자야/, /대\s*현\s*자\s*야/, /대현자아/, /대\s*현\s*자/,
+  /자비스야/, /자비스아/, /대현자/
+];
+const WAKE_BUF_LIMIT = 60;
+
+const EXIT_WORDS = ['종료','고마워','그만','꺼줘','닫아'];
+const SILENCE_MS  = 30_000;
+
+// Clap detection thresholds
+const CLAP_HI = 0.55;
+const CLAP_LO = 0.07;
+
+// Code-gen trigger patterns — "개발해줘" / "코드 구현해줘" 명시적 워딩만 허용
+const CODE_GEN_PATS = [
+  /개발\s*(?:해줘|해주세요|해봐|해줘요)/,
+  /코드\s*(?:구현|작성|만들어|추가)\s*(?:해줘|해주세요|해봐)/,
+  /구현\s*(?:해줘|해주세요|해봐|해줘요)/,
+  /(?:기능|서비스|페이지|화면|앱)\s*(?:개발|구현)\s*(?:해줘|해주세요|해봐)/,
+];
+
+// Todo/Memo 직접 등록 패턴
+const TODO_ADD_PATS = [
+  /(.+?)\s*(?:할\s*일|할일)\s*(?:추가|등록|저장)(?:해줘|해주세요|해봐)?/,
+  /(?:할\s*일|할일)\s*(?:추가|등록)\s*[:\-]?\s*(.+)/,
+];
+const MEMO_ADD_PATS = [
+  /(.+?)\s*(?:메모|노트)\s*(?:저장|추가|등록|해줘)(?:해줘|해주세요)?/,
+  /(?:메모|노트)\s*(?:저장|추가|해줘)\s*[:\-]?\s*(.+)/,
+  /(.+?)\s*메모해줘/,
+];
+
+// Browser TTS fallback voice preferences (male / deep)
+const VOICE_PREFS_KO = ['InJoon','Injoon','InJun','Injun','Junwoo'];
+const VOICE_PREFS_EN = ['Google UK English Male','David','Mark','Daniel'];
+const VCFG = { pitch:0.85, rate:1.0, vol:1.0 };
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let wakeBuffer = '';
+let appSt = ST.INIT;
+let audioCtx, analyser, recog;
+let recogOn = false;
+let convId = null, msgCnt = 0;
+let silTimer = null;
+let prevAmp = 0;
+let selVoice = null;
+let activeSource = null;
+let typingStop = false;
+let isSpeaking = false;
+let isHandling = false;
+let activeJobId = null;
+const tdbuf = new Float32Array(256);
+const wfbuf = new Uint8Array(512);
+
+
+// DOM-based text measurer — matches browser rendering exactly (Korean-accurate)
+let _measEl = null;
+function domMeasure(s) {
+  if (!_measEl) {
+    _measEl = document.createElement('span');
+    Object.assign(_measEl.style, {
+      position:'fixed', top:'-9999px', left:'-9999px',
+      visibility:'hidden', pointerEvents:'none',
+      whiteSpace:'nowrap', fontFamily:'"Courier New",monospace',
+      fontSize:'16px', lineHeight:'1.68'
+    });
+    document.addEventListener('DOMContentLoaded', () => document.body.appendChild(_measEl));
+  }
+  _measEl.textContent = s;
+  return _measEl.getBoundingClientRect().width;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  drawMC();
+  tickClock(); setInterval(tickClock, 1000);
+  loadCards();
+  document.getElementById('sbtn').onclick = boot;
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' && e.target === document.body) {
+      e.preventDefault();
+      if (appSt === ST.STANDBY) activate();
+      else if (appSt === ST.LISTENING) deactivate('네, 현진님. 대기 모드로 전환합니다.');
+    }
+  });
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = () => { resolveVoice(); populateVoiceSel(); };
+    window.speechSynthesis.getVoices();
+    resolveVoice(); populateVoiceSel();
+  }
+  document.getElementById('vsel').addEventListener('change', e => {
+    const idx = parseInt(e.target.value);
+    const voices = window.speechSynthesis?.getVoices() || [];
+    if (!isNaN(idx) && voices[idx]) { selVoice = voices[idx]; localStorage.setItem('jvIdx', idx); }
+  });
+});
+
+function tickClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'}) +
+    '  ' + new Date().toLocaleTimeString('ko-KR');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════════
+async function boot() {
+  document.getElementById('inov').style.display = 'none';
+  setFt('마이크 초기화 중...');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    setupAudio(stream);
+    setupRecog();
+    convId = await createConv();
+    document.getElementById('cid').textContent = convId;
+    document.getElementById('sessec').style.display = '';
+    setOnline('vst'); setOnline('ast');
+    loadCards();
+    setState(ST.STANDBY);
+    setFt('준비 완료 — 박수 또는 "대현자야" / [Space]로 활성화');
+  } catch(e) {
+    document.getElementById('inov').style.display = '';
+    setFt('오류: ' + e.message);
+  }
+}
+
+function setOnline(id) {
+  const el = document.getElementById(id);
+  el.textContent = 'ONLINE'; el.classList.add('ok');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AUDIO + CLAP DETECTION
+// ═══════════════════════════════════════════════════════════
+function setupAudio(stream) {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 1024;
+  analyser.smoothingTimeConstant = 0.50;
+  audioCtx.createMediaStreamSource(stream).connect(analyser);
+  rafLoop();
+}
+
+function rafLoop() {
+  requestAnimationFrame(rafLoop);
+  analyser.getFloatTimeDomainData(tdbuf);
+  let peak = 0;
+  for (let i = 0; i < tdbuf.length; i++) { const a = Math.abs(tdbuf[i]); if (a > peak) peak = a; }
+  document.getElementById('mbar').style.width = (peak * 100).toFixed(1) + '%';
+
+  // Clap detection: rapid jump from quiet → loud (STANDBY=활성화 / SPEAKING·BRIEFING=인터럽트)
+  const clapable = appSt === ST.STANDBY || appSt === ST.SPEAKING || appSt === ST.BRIEFING;
+  if (clapable && prevAmp < CLAP_LO && peak > CLAP_HI) activate();
+  prevAmp = peak * 0.22 + prevAmp * 0.78;
+
+  if (appSt === ST.LISTENING || appSt === ST.SPEAKING) {
+    document.getElementById('orb').style.transform = `scale(${1 + peak * 0.18})`;
+  } else {
+    document.getElementById('orb').style.transform = '';
+  }
+  drawWF(peak);
+}
+
+function drawWF(peak) {
+  const c = document.getElementById('wfc'), ctx = c.getContext('2d');
+  const W = c.offsetWidth || 600, H = 44;
+  c.width = W; ctx.clearRect(0,0,W,H);
+  if (appSt === ST.LISTENING || appSt === ST.PROCESSING) {
+    analyser.getByteFrequencyData(wfbuf);
+    const bars=64, step=Math.floor(wfbuf.length/bars/2.5), bw=W/bars-1;
+    const col = appSt===ST.PROCESSING?[255,136,0]:[0,255,136];
+    for(let i=0;i<bars;i++){const v=wfbuf[i*step]/255,bh=Math.max(2,v*H),alpha=0.25+v*0.75;
+      ctx.fillStyle=`rgba(${col[0]},${col[1]},${col[2]},${alpha})`;ctx.fillRect(i*(bw+1),H-bh,bw,bh);}
+  } else if (appSt === ST.SPEAKING) {
+    const t=Date.now()/280, amp=H*0.40*(0.5+peak*0.5);
+    ctx.strokeStyle='rgba(0,212,255,0.72)';ctx.lineWidth=1.5;ctx.beginPath();
+    for(let x=0;x<=W;x+=2){const y=H/2+Math.sin(x*0.06+t)*amp*Math.sin(t*0.22+x*0.012);x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+    ctx.stroke();
+  } else if (appSt === ST.STANDBY) {
+    const t=Date.now()/2200;
+    ctx.strokeStyle='rgba(136,51,255,0.22)';ctx.lineWidth=1;ctx.beginPath();
+    for(let x=0;x<=W;x+=3){const y=H/2+Math.sin(x*0.035+t)*4;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+    ctx.stroke();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ACTIVATION SOUND (Web Audio synth — rising chord)
+// ═══════════════════════════════════════════════════════════
+function playActivationSound() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  [[55,'sine',0.08,0.8],[110,'sawtooth',0.06,0.6],[220,'sine',0.14,0.5],
+   [330,'sine',0.10,0.5],[440,'triangle',0.06,0.4]].forEach(([f,type,gain,dur], i) => {
+    const osc=audioCtx.createOscillator(), g=audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(f*0.88, now+i*0.06);
+    osc.frequency.exponentialRampToValueAtTime(f, now+i*0.06+0.25);
+    g.gain.setValueAtTime(0, now+i*0.06);
+    g.gain.linearRampToValueAtTime(gain, now+i*0.06+0.15);
+    g.gain.exponentialRampToValueAtTime(0.001, now+i*0.06+dur);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(now+i*0.06); osc.stop(now+i*0.06+dur+0.1);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BROWSER TTS VOICE SELECTION
+// ═══════════════════════════════════════════════════════════
+function resolveVoice() {
+  const voices = window.speechSynthesis?.getVoices() || [];
+  if (!voices.length) return;
+  const savedIdx = localStorage.getItem('jvIdx');
+  if (savedIdx !== null && voices[+savedIdx]) { selVoice = voices[+savedIdx]; return; }
+  // Prefer Korean male voice
+  for (const p of VOICE_PREFS_KO) {
+    const v = voices.find(v => v.name.includes(p));
+    if (v) { selVoice = v; return; }
+  }
+  // Exclude female Korean voices
+  const koMale = voices.find(v =>
+    v.lang.startsWith('ko') && !/heami|female|girl|하나|여성|여자/i.test(v.name));
+  if (koMale) { selVoice = koMale; return; }
+  // Any Korean voice
+  const ko = voices.find(v => v.lang.startsWith('ko'));
+  if (ko) { selVoice = ko; return; }
+  // English male fallback
+  for (const p of VOICE_PREFS_EN) {
+    const v = voices.find(v => v.name.includes(p));
+    if (v) { selVoice = v; return; }
+  }
+  selVoice = voices[0];
+}
+
+function populateVoiceSel() {
+  const voices = window.speechSynthesis?.getVoices() || [];
+  const sel = document.getElementById('vsel');
+  const savedIdx = localStorage.getItem('jvIdx');
+  sel.innerHTML = voices.map((v,i) =>
+    `<option value="${i}"${(savedIdx!==null?+savedIdx===i:v===selVoice)?' selected':''}>${v.name.slice(0,28)} (${v.lang})</option>`
+  ).join('');
+}
+
+// Chrome: synthesis sometimes pauses mid-utterance
+setInterval(() => { if (window.speechSynthesis?.paused) window.speechSynthesis.resume(); }, 3500);
+
+// ═══════════════════════════════════════════════════════════
+//  SPEECH RECOGNITION — always running after boot
+// ═══════════════════════════════════════════════════════════
+function setupRecog() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { setFt('경고: SpeechRecognition 미지원 — Chrome/Edge 필요'); return; }
+  recog = new SR();
+  recog.lang = 'ko-KR';
+  recog.continuous = true;
+  recog.interimResults = true;
+  recog.maxAlternatives = 3;
+
+  recog.onresult = (ev) => {
+    let interim = '';
+    let finalText = '';      // most-confident transcript only (for handleInput)
+    let allFinals = [];      // all alternatives (for wake-word check)
+
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      if (ev.results[i].isFinal) {
+        finalText += ev.results[i][0].transcript;             // best alt only
+        for (let j = 0; j < ev.results[i].length; j++) {
+          allFinals.push(ev.results[i][j].transcript);        // all alts for wake
+        }
+      } else {
+        interim += ev.results[i][0].transcript;
+      }
+    }
+
+    // STANDBY + SPEAKING + BRIEFING 상태에서 웨이크워드 감지 → 인터럽트 or 활성화
+    if (appSt === ST.STANDBY || appSt === ST.SPEAKING || appSt === ST.BRIEFING) {
+      // 1) Check each alternative + interim individually
+      for (const t of [...allFinals, interim].filter(Boolean)) {
+        if (WAKE_PATS.some(p => p.test(t.replace(/\s/g,'')))) {
+          wakeBuffer = ''; activate(); return;
+        }
+      }
+      // 2) Rolling buffer — catch wake word split across multiple results
+      if (finalText) {
+        wakeBuffer = (wakeBuffer + finalText).slice(-WAKE_BUF_LIMIT);
+        if (WAKE_PATS.some(p => p.test(wakeBuffer.replace(/\s/g,'')))) {
+          wakeBuffer = ''; activate(); return;
+        }
+      }
+      if (appSt !== ST.LISTENING) return;
+    }
+
+    if (appSt === ST.LISTENING) {
+      if (interim) setUserDisplay(interim, true);
+      if (finalText.trim() && !isHandling) {
+        resetSil(); handleInput(finalText.trim());
+      }
+    }
+  };
+
+  recog.onerror = (e) => {
+    if (e.error !== 'aborted' && e.error !== 'no-speech') console.warn('recog:', e.error);
+  };
+  recog.onend = () => { if (recogOn) setTimeout(startRecog, 200); };
+  startRecog();
+}
+
+function setUserDisplay(text, isInterim) {
+  const MAX = 50;
+  const d = text.length > MAX ? '··· ' + text.slice(-(MAX-4)) : text;
+  document.getElementById('trUser').textContent = d + (isInterim ? ' ···' : '');
+}
+function startRecog() { recogOn=true; try{recog?.start();}catch(_){} }
+function stopRecog()  { recogOn=false; try{recog?.stop();}catch(_){} }
+
+// ═══════════════════════════════════════════════════════════
+//  ACTIVATION / DEACTIVATION
+// ═══════════════════════════════════════════════════════════
+async function activate() {
+  // STANDBY: 정상 활성화
+  // SPEAKING / BRIEFING: 말하는 도중 호출 → 즉각 인터럽트 후 청취 모드 전환
+  const interruptable = appSt === ST.SPEAKING || appSt === ST.BRIEFING;
+  if (appSt !== ST.STANDBY && !interruptable) return;
+
+  wakeBuffer = '';
+
+  if (interruptable) {
+    // ── 인터럽트 프로토콜 ──────────────────────────────
+    isHandling = false;         // 진행 중 요청 잠금 해제 → 새 명령 즉각 수신 가능
+    typingStop = true;          // 타이핑 애니메이션 즉각 중단
+    stopAudio();                // 오디오 재생 즉각 정지
+    clearLines();
+    document.getElementById('stopbtn').style.display = '';
+    setState(ST.LISTENING);
+    setFt('세션 활성 — 말씀하세요');
+    resetSil();
+    startRecog();
+    return;
+  }
+
+  // ── 정상 활성화 흐름 ──────────────────────────────────
+  setState(ST.ACTIVATING);
+  playActivationSound();
+  await delay(320);
+  await speakTTS('네, 현진님. 대현자의 프로토콜을 개시합니다.');
+  setState(ST.BRIEFING);
+  await doBriefing();
+  setState(ST.LISTENING);
+  document.getElementById('stopbtn').style.display = '';
+  resetSil();
+  setFt('세션 활성 — 말씀하세요');
+}
+
+async function deactivate(msg) {
+  isHandling = false;
+  clearTimeout(silTimer);
+  stopAudio();
+  typingStop = true;
+  document.getElementById('stopbtn').style.display = 'none';
+  clearLines();
+  document.getElementById('trUser').textContent = '';
+  if (msg) await speakTTS(msg);
+  addMsg('s','─── 세션 종료 ───');
+  setState(ST.STANDBY);
+  setFt('대기 중 — 박수 또는 "대현자야" / [Space]로 활성화');
+}
+
+function stopAudio() {
+  try { activeSource?.stop(); } catch(_) {}
+  activeSource = null;
+  window.speechSynthesis?.cancel();
+  isSpeaking = false;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BRIEFING
+// ═══════════════════════════════════════════════════════════
+async function doBriefing() {
+  try {
+    const d = await fetch('/api/briefing/daily').then(r=>r.json());
+    renderBriefing(d);
+    loadCards();
+    await speakTTS(buildBriefTxt(d));
+  } catch(e) {
+    console.error(e);
+    await speakTTS('브리핑 데이터를 불러오지 못하였습니다. 무엇을 도와드릴까요?');
+  }
+}
+
+function renderBriefing(d) {
+  document.getElementById('bsec').style.display='';
+  document.getElementById('bw').innerHTML='🌡 '+(d.weather||'날씨 정보 없음');
+  const todos=d.todos||[];
+  document.getElementById('btodos').innerHTML=
+    `<div class="bl">할 일 (${todos.length})</div>`+
+    (todos.length?todos.map(t=>`<div class="bi">⬡ ${esc(t.title)}</div>`).join(''):'<div class="bn">없음</div>');
+  const sc=d.schedules||[];
+  document.getElementById('bscheds').innerHTML=
+    `<div class="bl">오늘 일정 (${sc.length})</div>`+
+    (sc.length?sc.map(s=>`<div class="bi">◈ ${esc(s.title)} — ${fmtT(s.startTime)}</div>`).join(''):'<div class="bn">없음</div>');
+
+}
+
+function buildBriefTxt(d) {
+  const now=new Date();
+  const days=['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+  let t=`오늘은 ${now.getMonth()+1}월 ${now.getDate()}일 ${days[now.getDay()]}입니다. `;
+
+  // 날씨: 백엔드가 이미 한국어 변환 완료 (예: "27도 맑겠습니다")
+  if(d.weather) t+=`현재 서울 날씨는 ${d.weather} `;
+
+  const todos=d.todos||[];
+  if(!todos.length) {
+    t+='오늘 해야할 일은 따로 없습니다. ';
+  } else {
+    t+=`오늘 해야할 일이 ${todos.length}건 있습니다. `;
+    todos.slice(0,3).forEach((td,i)=>{t+=`${i+1}번, ${td.title}. `;});
+    if(todos.length>3) t+=`외 ${todos.length-3}건이 더 있습니다. `;
+  }
+  const sc=d.schedules||[];
+  if(sc.length) {
+    t+=`오늘 일정 ${sc.length}건입니다. `;
+    sc.slice(0,3).forEach(s=>{t+=`${fmtT(s.startTime)}, ${s.title}. `;});
+  }
+  t+='현진님, 무엇을 도와드릴까요?';
+  return t;
+}
+
+function fmtT(iso) {
+  if(!iso) return '';
+  const d=new Date(iso),h=d.getHours(),m=d.getMinutes();
+  return `${h<12?'오전':'오후'} ${h%12||12}시${m?' '+m+'분':''}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SILENCE + INPUT HANDLING
+// ═══════════════════════════════════════════════════════════
+function resetSil() {
+  clearTimeout(silTimer);
+  silTimer = setTimeout(()=>{
+    if(appSt===ST.LISTENING)
+      deactivate('30초간 응답이 없어 대기 모드로 전환합니다. 현진님, 필요하시면 다시 불러주십시오.');
+  }, SILENCE_MS);
+}
+
+async function handleInput(text) {
+  if (isHandling) return;
+  isHandling = true;
+  try {
+    const clean = text.replace(/\s/g,'');
+    if (EXIT_WORDS.some(w=>clean.includes(w))) {
+      await deactivate('네, 현진님. 수고하셨습니다. 대현자 프로토콜을 일시 중단합니다.');
+      return;
+    }
+    addMsg('u', text);
+    setUserDisplay(text, false);
+    stopRecog();
+
+    // 1순위: Claude Code CLI 개발 명령
+    if (CODE_GEN_PATS.some(p=>p.test(text))) {
+      await handleCodeGen(text);
+    }
+    // 2순위: 할일 직접 등록
+    else if (TODO_ADD_PATS.some(p=>p.test(text))) {
+      const m = TODO_ADD_PATS.map(p=>p.exec(text)).find(Boolean);
+      await handleAddTodo(m ? (m[1]||m[0]).trim() : text);
+    }
+    // 3순위: 메모 직접 등록
+    else if (MEMO_ADD_PATS.some(p=>p.test(text))) {
+      const m = MEMO_ADD_PATS.map(p=>p.exec(text)).find(Boolean);
+      await handleAddMemo(m ? (m[1]||m[0]).trim() : text);
+    }
+    // 기본: AI 채팅
+    else {
+      await sendMsg(text);
+    }
+  } finally {
+    isHandling = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CHAT (SSE streaming)
+// ═══════════════════════════════════════════════════════════
+async function sendMsg(text) {
+  if(!convId) return;
+  setState(ST.PROCESSING); setFt('AI 코어 처리 중...'); showPdots(true); clearLines();
+  try {
+    const res = await fetch(`/api/conversations/${convId}/messages/stream`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:text})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const reader=res.body.getReader(), dec=new TextDecoder();
+    let full='',buf='';
+    showPdots(false);
+    while(true){
+      const{done,value}=await reader.read(); if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n'); buf=lines.pop();
+      for(const ln of lines){
+        if(ln.startsWith('data:')){const ch=ln.slice(5).trim();if(ch&&ch!=='[DONE]')full+=ch;}
+      }
+    }
+    if(buf.startsWith('data:')){const ch=buf.slice(5).trim();if(ch&&ch!=='[DONE]')full+=ch;}
+    if(full){
+      const clean=stripMd(full);
+      addMsg('a',clean);
+      setState(ST.SPEAKING);
+      await speakTTS(clean);
+    }
+    setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil(); startRecog();
+  } catch(e) {
+    console.error(e); showPdots(false);
+    setState(ST.LISTENING);
+    await speakTTS('처리 중 오류가 발생하였습니다. 다시 말씀해 주십시오.');
+    startRecog(); resetSil();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CODE GENERATION (Claude Code CLI — 실제 터미널 창 실행)
+// ═══════════════════════════════════════════════════════════
+async function cancelDevJob() {
+  if (!activeJobId) return;
+  try {
+    await fetch('/api/dev/jobs/' + activeJobId, { method: 'DELETE' });
+    addCgLog('⚠ 취소 요청 전송됨', 'cgi-error');
+  } catch(e) { console.error(e); }
+}
+
+async function handleCodeGen(text) {
+  setState(ST.PROCESSING); setFt('Dev Job 제출 중...'); showPdots(true); clearLines();
+
+  const cgsec     = document.getElementById('cgsec');
+  const devReport = document.getElementById('devReport');
+  const cglog     = document.getElementById('cglog');
+  const cancelBtn = document.getElementById('cgCancelBtn');
+
+  devReport.innerHTML = '';
+  cglog.innerHTML = '';
+  cgsec.style.display = '';
+  cancelBtn.style.display = '';
+
+  await speakTTS('네, 현진님. 터미널을 열고 Claude Code로 개발을 시작합니다. 잠시 기다려 주십시오.');
+
+  try {
+    // 1) 잡 제출 — 즉시 jobId 반환
+    const submitRes = await fetch('/api/dev/jobs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: text })
+    });
+    if (!submitRes.ok) throw new Error('HTTP ' + submitRes.status);
+    const { jobId } = await submitRes.json();
+    activeJobId = jobId;
+
+    addCgLog('▶ Job #' + jobId + ' 시작됨', 'cgi-start');
+    showPdots(false);
+    setLines('Claude Code 터미널 실행 중...');
+
+    // 2) SSE 스트림 연결
+    const streamRes = await fetch('/api/dev/jobs/' + jobId + '/stream', {
+      headers: { 'Accept': 'text/event-stream' }
+    });
+    if (!streamRes.ok) throw new Error('Stream HTTP ' + streamRes.status);
+
+    const reader = streamRes.body.getReader(), dec = new TextDecoder();
+    let buf = '', summary = '', fileList = [], buildOk = false;
+    const startTime = Date.now();
+
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const evtLines = buf.split('\n'); buf = evtLines.pop();
+      for (const ln of evtLines) {
+        if (!ln.startsWith('data:')) continue;
+        const raw = ln.slice(5).trim(); if (raw === '[DONE]') continue;
+        try {
+          const evt = JSON.parse(raw);
+          if (evt.type === 'log' && evt.data) {
+            addCgLog(evt.data, classForLog(evt.data));
+            setLines(evt.data.slice(0, 55));
+          } else if (evt.type === 'status') {
+            addCgLog('[ ' + evt.data + ' ]', 'cgi-start');
+          } else if (evt.type === 'done') {
+            const doneData = JSON.parse(evt.data);
+            summary  = doneData.summary      || '';
+            fileList = doneData.changedFiles  || [];
+            buildOk  = doneData.buildSuccess === true;
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            cancelBtn.style.display = 'none';
+            renderDevReport(fileList, buildOk, elapsed, devReport, cgsec, doneData.diffStat || '');
+          }
+        } catch(_) {}
+      }
+    }
+
+    cancelBtn.style.display = 'none';
+    activeJobId = null;
+    const reply = stripMd(summary || '코드 생성이 완료되었습니다.');
+    addMsg('a', reply); setState(ST.SPEAKING); await speakTTS(reply);
+  } catch(e) {
+    console.error(e);
+    showPdots(false);
+    cancelBtn.style.display = 'none';
+    activeJobId = null;
+    const err = '코드 생성 중 오류가 발생하였습니다. 다시 시도해 주십시오.';
+    addMsg('a', err); setState(ST.SPEAKING); await speakTTS(err);
+  }
+  setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil(); startRecog();
+}
+
+function addCgLog(msg, cls) {
+  const log = document.getElementById('cglog');
+  if (!log) return;
+  const el = document.createElement('div');
+  el.className = 'cgi ' + (cls || '');
+  el.textContent = msg;
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+}
+
+function classForLog(msg) {
+  if (/error|실패|FAIL/i.test(msg)) return 'cgi-error';
+  if (/✓|SUCCESS|완료|DONE/i.test(msg)) return 'cgi-done';
+  if (/━━━|시작|RUNNING|git|gradle/i.test(msg)) return 'cgi-start';
+  return 'cgi-progress';
+}
+
+// 우측 패널 대시보드 리포트 렌더링
+function renderDevReport(files, buildOk, elapsed, container, section, diffStat) {
+  let h = '';
+  if (diffStat) {
+    h += '<div class="rpt-label">변경 통계</div>';
+    h += '<div class="rpt-file" style="white-space:pre-wrap">' + esc(diffStat) + '</div>';
+  }
+  if (files.length > 0) {
+    h += '<div class="rpt-label">처리된 파일 (' + files.length + ')</div>';
+    files.forEach(f => { h += '<div class="rpt-file">✓ ' + esc(f) + '</div>'; });
+  } else {
+    h += '<div class="rpt-label">파일 변경 없음</div>';
+  }
+  h += '<div class="' + (buildOk ? 'rpt-build-ok' : 'rpt-build-fail') + '">'
+     + (buildOk ? '✓ BUILD SUCCESS' : '✗ BUILD FAILED') + '</div>';
+  h += '<div class="rpt-elapsed">소요 시간 ' + elapsed + 's</div>';
+  container.innerHTML = h;
+  section.style.display = '';
+}
+
+
+// ═══════════════════════════════════════════════════════════
+//  TTS — PRIMARY: OpenAI onyx 1.0x  |  FALLBACK: browser
+// ═══════════════════════════════════════════════════════════
+async function speakTTS(text) {
+  if (!text?.trim()) return;
+  const t = text.trim();
+  typingStop = false;
+  clearLines();
+
+  if (audioCtx) {
+    try {
+      await playCloudTTS(t);
+      showTTSMode(true);
+      return;
+    } catch(e) {
+      console.warn('[TTS] OpenAI onyx 실패, 브라우저 전환:', e.message);
+      showTTSMode(false);
+    }
+  } else {
+    showTTSMode(false);
+  }
+
+  await playBrowserTTS(t);
+}
+
+// OpenAI alloy via /api/tts/speak
+async function playCloudTTS(text) {
+  if (audioCtx.state !== 'running') {
+    await audioCtx.resume();
+    if (audioCtx.state !== 'running') throw new Error('AudioContext suspended');
+  }
+
+  const resp = await fetch('/api/tts/speak', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
+  });
+  if (!resp.ok) throw new Error('TTS API error ' + resp.status);
+
+  const bytes = await resp.arrayBuffer();
+  if (!bytes.byteLength) throw new Error('Empty audio response');
+
+  const audioBuf = await audioCtx.decodeAudioData(bytes);
+  const durationMs = audioBuf.duration * 1000;
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = audioBuf;
+  src.connect(audioCtx.destination);
+  activeSource = src;
+  isSpeaking = true;
+
+  // Start audio and animation in the same synchronous block for tightest alignment
+  src.start();
+  const audioEnd = new Promise(resolve => { src.onended = resolve; });
+  const typing   = typeTextAnimated(text, durationMs);
+
+  await Promise.all([audioEnd, typing]);
+  activeSource = null;
+  isSpeaking = false;
+  removeCursor();
+}
+
+// Browser TTS with estimated duration animation
+async function playBrowserTTS(text) {
+  if (!window.speechSynthesis) { setLines(text); return; }
+
+  resolveVoice();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = selVoice?.lang || 'ko-KR';
+  u.pitch = VCFG.pitch; u.rate = VCFG.rate; u.volume = VCFG.vol;
+  if (selVoice) u.voice = selVoice;
+
+  // Estimate ~4 Korean chars/sec at rate 1.0
+  const estMs = Math.max(2000, (text.length / 4) * 1000 / VCFG.rate);
+
+  isSpeaking = true;
+  const audioEnd = new Promise(resolve => {
+    u.onend = u.onerror = () => { isSpeaking = false; resolve(); };
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  });
+  const typing = typeTextAnimated(text, estMs);
+
+  await Promise.all([audioEnd, typing]);
+  removeCursor();
+  isSpeaking = false;
+}
+
+function showTTSMode(isCloud) {
+  const tag = document.getElementById('ttsModeTag');
+  const val = document.getElementById('ttsModeVal');
+  const jtts = document.getElementById('jtts');
+  tag.style.display = '';
+  if (isCloud) {
+    tag.className = 'tts-tag tts-cloud'; tag.textContent = '▶ OPENAI ONYX';
+    val.textContent = 'CLOUD'; val.className = 'ok';
+    jtts.textContent = '◆ ONYX'; jtts.style.color = 'var(--cyan)';
+  } else {
+    tag.className = 'tts-tag tts-local'; tag.textContent = '▷ BROWSER';
+    val.textContent = 'LOCAL'; val.className = '';
+    jtts.textContent = '◇ LOCAL'; jtts.style.color = 'var(--orange)';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TEXT ANIMATION — char-by-char, 2-line rolling, canvas-measured
+// ═══════════════════════════════════════════════════════════
+
+// Build display lines using DOM measurement (Korean-accurate, matches browser rendering)
+function buildLines(text) {
+  if (!text) return [];
+  // Ensure measurer is in DOM
+  if (_measEl && !_measEl.parentNode) document.body.appendChild(_measEl);
+  const maxPx = Math.max(160, (document.getElementById('jwindow')?.offsetWidth || 340) - 12);
+
+  if (domMeasure(text) <= maxPx) return [{ text }];
+
+  const result = [];
+  let pos = 0;
+
+  while (pos < text.length) {
+    // Binary search: max chars from pos that fit in maxPx
+    let lo = pos + 1, hi = text.length, fit = pos + 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (domMeasure(text.slice(pos, mid)) <= maxPx) { fit = mid; lo = mid + 1; }
+      else hi = mid - 1;
+    }
+
+    // Prefer breaking at a space (natural word boundary)
+    const chunk = text.slice(pos, fit);
+    const lastSp = chunk.lastIndexOf(' ');
+    const breakAt = lastSp > 0 ? pos + lastSp : fit;
+
+    result.push({ text: text.slice(pos, breakAt).trimEnd() });
+    pos = breakAt;
+    while (pos < text.length && text[pos] === ' ') pos++;
+  }
+
+  return result.length ? result : [{ text }];
+}
+
+async function typeTextAnimated(text, totalDurationMs) {
+  const lines = buildLines(text);
+  if (!lines.length) return;
+
+  const numSlides  = lines.length - 1;
+  const slideMs    = 100;
+  // 전체 글자 수(공백 포함) 기준으로 타이밍 배분 — 공백도 타이핑 비용에 포함
+  const totalChars = lines.reduce((s, l) => s + l.text.length, 0) || 1;
+  // 오디오 길이보다 약간 빠르게(0.88배) 완료되도록 설정 → 싱크 선행 보정
+  const typingBudget = Math.max(
+    totalDurationMs * 0.88 - numSlides * slideMs,
+    totalChars * 3   // 최소 글자당 3ms
+  );
+
+  const startTime = performance.now();
+  let charsSoFar  = 0;
+  let topText     = '';
+
+  for (let li = 0; li < lines.length; li++) {
+    if (typingStop) break;
+    const lineText = lines[li].text;
+
+    if (li > 0) {
+      topText = lines[li - 1].text;
+      setLineEls(topText, '', true);
+      await delay(slideMs);
+    }
+
+    addCursor();
+
+    for (let ci = 0; ci < lineText.length; ci++) {
+      if (typingStop) break;
+
+      // 공백 포함 모든 글자에 동일하게 타이밍 적용 (공백 뭉개짐 방지)
+      const targetMs = (charsSoFar / totalChars) * typingBudget;
+      const elapsed  = performance.now() - startTime;
+      const waitMs   = Math.max(0, targetMs - elapsed);
+      if (waitMs > 0.5) await delay(waitMs);
+
+      charsSoFar++;
+      setLineEls(topText, lineText.slice(0, ci + 1), false);
+    }
+  }
+
+  if (!typingStop) {
+    const last = lines.length - 1;
+    setLineEls(lines.length >= 2 ? lines[last - 1].text : '', lines[last].text, false);
+  }
+  removeCursor();
+}
+
+function setLineEls(top, bot, animateBot) {
+  const el1 = document.getElementById('jl1');
+  const el2 = document.getElementById('jl2');
+  if (!el1 || !el2) return;
+  el1.textContent = top;
+  if (animateBot) {
+    el2.classList.remove('jl-enter');
+    void el2.offsetWidth; // force reflow
+    el2.textContent = bot;
+    el2.classList.add('jl-enter');
+  } else {
+    el2.textContent = bot;
+  }
+}
+
+function addCursor()    { document.getElementById('jl2')?.classList.add('cursor-active'); }
+function removeCursor() { document.getElementById('jl2')?.classList.remove('cursor-active'); }
+
+function setLines(text) {
+  if (!text) { clearLines(); return; }
+  const ls = buildLines(text);
+  setLineEls(ls.length >= 2 ? ls[ls.length-2].text : '', ls[ls.length-1]?.text || '', false);
+}
+function clearLines() {
+  setLineEls('','',false);
+  removeCursor();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════════════
+function delay(ms) { return new Promise(r=>setTimeout(r,ms)); }
+
+function showPdots(show) {
+  document.getElementById('pdots').className = 'pdots'+(show?' show':'');
+  document.getElementById('jwindow').style.display = show?'none':'';
+}
+
+const STLBL={init:'초기화',standby:'대기 중',activating:'활성화 중',
+  briefing:'브리핑 중',listening:'청취 중',processing:'처리 중',speaking:'응답 중'};
+
+function setState(s) {
+  appSt=s;
+  document.body.setAttribute('data-state',s);
+  const lbl=STLBL[s]||s;
+  document.getElementById('slbl').textContent=lbl;
+  document.getElementById('olbl').textContent=lbl;
+}
+
+function addMsg(role, text) {
+  const log=document.getElementById('clog');
+  const d=document.createElement('div');
+  d.className=`msg m${role}`;
+  const labels={u:'현진님',a:'대현자',s:''};
+  d.innerHTML=`<span class="mrole">${labels[role]||''}</span><span class="mt">${esc(text)}</span>`;
+  log.appendChild(d); log.scrollTop=log.scrollHeight;
+  if(role!=='s'){msgCnt++;document.getElementById('mcnt').textContent=msgCnt;}
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CARDS — Todo / Memo
+// ═══════════════════════════════════════════════════════════
+async function loadCards() {
+  try {
+    const [todos, memos] = await Promise.all([
+      fetch('/api/todos').then(r=>r.ok?r.json():[]),
+      fetch('/api/memos').then(r=>r.ok?r.json():[]),
+    ]);
+    renderCards(todos, memos);
+  } catch(e) { console.warn('카드 로드 실패:', e.message); }
+}
+
+function renderCards(todos, memos) {
+  const row = document.getElementById('cardsRow');
+  const section = document.getElementById('cardsSection');
+  // 기존 카드 제거 (+ 버튼은 유지)
+  [...row.querySelectorAll('.card')].forEach(el=>el.remove());
+
+  const addBtn = row.querySelector('.cards-add-btn');
+
+  // Todo 카드
+  [...todos].sort((a,b)=>a.done-b.done).forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'card card-todo' + (t.done?' card-done':'');
+    el.dataset.id = t.id; el.dataset.type = 'todo';
+    el.innerHTML = `
+      <div class="card-type">◆ TODO</div>
+      <div class="card-title">${esc(t.title)}</div>
+      <div class="card-sub">${t.dueDate?'📅 '+t.dueDate : t.done?'✓ 완료':'미완료'}</div>
+      <button class="card-del" onclick="deleteCard(event,'todo',${t.id})">✕</button>`;
+    el.addEventListener('click', (e)=>{ if(!e.target.classList.contains('card-del')) toggleTodo(t.id,el); });
+    row.insertBefore(el, addBtn);
+  });
+
+  // Memo 카드
+  memos.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'card card-memo';
+    el.dataset.id = m.id; el.dataset.type = 'memo';
+    const preview = (m.content||'').slice(0,40) + ((m.content||'').length>40?'…':'');
+    el.innerHTML = `
+      <div class="card-type">◈ MEMO</div>
+      <div class="card-title">${esc(m.title)}</div>
+      <div class="card-sub">${esc(preview)||'내용 없음'}</div>
+      <button class="card-del" onclick="deleteCard(event,'memo',${m.id})">✕</button>`;
+    row.insertBefore(el, addBtn);
+  });
+
+  section.style.display = (todos.length + memos.length > 0) ? 'block' : 'none';
+}
+
+async function toggleTodo(id, el) {
+  try {
+    await fetch('/api/todos/'+id+'/toggle', {method:'PATCH'});
+    el.classList.toggle('card-done');
+    const sub = el.querySelector('.card-sub');
+    if (el.classList.contains('card-done')) sub.textContent = '✓ 완료';
+    else sub.textContent = '미완료';
+  } catch(e) { console.warn(e); }
+}
+
+async function deleteCard(e, type, id) {
+  e.stopPropagation();
+  try {
+    await fetch('/api/'+(type==='todo'?'todos':'memos')+'/'+id, {method:'DELETE'});
+    loadCards();
+  } catch(err) { console.warn(err); }
+}
+
+// 직접 등록 (음성 명령)
+async function handleAddTodo(title) {
+  setState(ST.PROCESSING); showPdots(true); clearLines();
+  try {
+    const res = await fetch('/api/todos', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({title})
+    });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    await loadCards();
+    const reply = `네, 현진님. "${title}" 할일을 등록하였습니다.`;
+    addMsg('a', reply); showPdots(false);
+    setState(ST.SPEAKING); await speakTTS(reply);
+  } catch(e) {
+    showPdots(false);
+    await speakTTS('할일 등록 중 오류가 발생했습니다.');
+  }
+  setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil(); startRecog();
+}
+
+async function handleAddMemo(title) {
+  setState(ST.PROCESSING); showPdots(true); clearLines();
+  try {
+    const res = await fetch('/api/memos', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({title, content:''})
+    });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    await loadCards();
+    const reply = `네, 현진님. "${title}" 메모를 저장하였습니다.`;
+    addMsg('a', reply); showPdots(false);
+    setState(ST.SPEAKING); await speakTTS(reply);
+  } catch(e) {
+    showPdots(false);
+    await speakTTS('메모 저장 중 오류가 발생했습니다.');
+  }
+  setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil(); startRecog();
+}
+
+// ── Add Modal ─────────────────────────────────────────────
+function openAddModal() {
+  document.getElementById('addTitle').value = '';
+  document.getElementById('addContent').value = '';
+  document.getElementById('addDue').value = '';
+  document.getElementById('addType').value = 'todo';
+  onAddTypeChange();
+  document.getElementById('addModal').classList.add('show');
+  setTimeout(()=>document.getElementById('addTitle').focus(), 50);
+}
+function closeAddModal() { document.getElementById('addModal').classList.remove('show'); }
+function onAddTypeChange() {
+  const isTodo = document.getElementById('addType').value === 'todo';
+  document.getElementById('addDueRow').style.display = isTodo ? '' : 'none';
+}
+async function submitAddModal() {
+  const type    = document.getElementById('addType').value;
+  const title   = document.getElementById('addTitle').value.trim();
+  const content = document.getElementById('addContent').value.trim();
+  const due     = document.getElementById('addDue').value;
+  if (!title) { document.getElementById('addTitle').focus(); return; }
+  try {
+    if (type === 'todo') {
+      const body = {title};
+      if (due) body.dueDate = due;
+      await fetch('/api/todos', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    } else {
+      await fetch('/api/memos', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title, content})});
+    }
+    closeAddModal();
+    await loadCards();
+  } catch(e) { alert('등록 실패: ' + e.message); }
+}
+// 모달 외부 클릭 시 닫기
+document.addEventListener('click', e => {
+  if (e.target.id === 'addModal') closeAddModal();
+});
+// Enter 키 제출
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeAddModal();
+});
+
+async function createConv() {
+  const r=await fetch('/api/conversations',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({title:'대현자 세션 — '+new Date().toLocaleString('ko-KR')})
+  });
+  return (await r.json()).id;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function stripMd(text) {
+  if (!text) return text;
+  return text
+    .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+    .replace(/\*([^*\n]+)\*/g, '$1')
+    .replace(/`([^`\n]+)`/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+}
+
+function setFt(t){document.getElementById('fst').textContent=t;}
+
+// ═══════════════════════════════════════════════════════════
+//  MAGIC CIRCLE SVG
+// ═══════════════════════════════════════════════════════════
+function drawMC() {
+  const svg=document.getElementById('mc'), cx=210,cy=210; let h='';
+  [[194,.27,'8 4'],[162,.17,null],[112,.21,'3 7'],[66,.27,null],[32,.32,null]].forEach(([r,op,dash])=>{
+    h+=`<circle cx="${cx}" cy="${cy}" r="${r}" stroke="rgba(0,212,255,${op})" fill="none" stroke-width="1"${dash?` stroke-dasharray="${dash}"`:''}/>`;
+  });
+  [[148,0,'rgba(0,212,255,0.11)'],[148,Math.PI,'rgba(0,212,255,0.11)'],[92,Math.PI/6,'rgba(0,212,255,0.07)']].forEach(([r,rot,col])=>{
+    h+=triSvg(cx,cy,r,rot,col);
+  });
+  const off=192,dg=off*0.707;
+  [[cx,cy-off,cx,cy+off],[cx-off,cy,cx+off,cy],[cx-dg,cy-dg,cx+dg,cy+dg],[cx+dg,cy-dg,cx-dg,cy+dg]].forEach(([x1,y1,x2,y2])=>{
+    h+=`<line x1="${(+x1).toFixed(1)}" y1="${(+y1).toFixed(1)}" x2="${(+x2).toFixed(1)}" y2="${(+y2).toFixed(1)}" stroke="rgba(0,212,255,0.055)" stroke-width="1"/>`;
+  });
+  for(let i=0;i<72;i++){
+    const a=i*5*Math.PI/180,tl=i%9===0?11:i%3===0?6:3,op=i%9===0?.42:.18;
+    const x1=cx+194*Math.cos(a),y1=cy+194*Math.sin(a),x2=cx+(194-tl)*Math.cos(a),y2=cy+(194-tl)*Math.sin(a);
+    h+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="rgba(0,212,255,${op})" stroke-width="1"/>`;
+  }
+  for(let i=0;i<12;i++){const a=i*30*Math.PI/180;h+=`<circle cx="${(cx+130*Math.cos(a)).toFixed(1)}" cy="${(cy+130*Math.sin(a)).toFixed(1)}" r="2" fill="rgba(0,212,255,0.32)"/>`;}
+  for(let i=0;i<6;i++){
+    const a=i*60*Math.PI/180+Math.PI/12,px=(cx+162*Math.cos(a)).toFixed(1),py=(cy+162*Math.sin(a)).toFixed(1);
+    h+=`<polygon points="${hexPts(+px,+py,5)}" stroke="rgba(0,212,255,0.28)" fill="rgba(0,212,255,0.06)" stroke-width="1"/>`;
+  }
+  svg.innerHTML=h;
+}
+function triSvg(cx,cy,r,rot,stroke){
+  const pts=[0,1,2].map(i=>{const a=rot+i*2*Math.PI/3-Math.PI/2;return`${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)}`;}).join(' ');
+  return `<polygon points="${pts}" stroke="${stroke}" fill="none" stroke-width="1"/>`;
+}
+function hexPts(cx,cy,r){
+  return[0,1,2,3,4,5].map(i=>{const a=i*Math.PI/3;return`${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)}`;}).join(' ');
+}
+</script>
+</body>
+</html>

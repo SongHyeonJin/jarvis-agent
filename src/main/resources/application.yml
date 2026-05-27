@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: jarvis-agent
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:h2:file:./data/jarvisdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+
+ai:
+  openai:
+    api-key: ${OPENAI_API_KEY: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}
+    model: gpt-4o-mini
+    base-url: https://api.openai.com/v1
+
+server:
+  port: 8081
+
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY: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}
+  model: claude-sonnet-4-6
+
+app:
+  project-root: d:/jarvis-agent
+
+logging:
+  level:
+    com.jarvis: INFO

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test 관리</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- 헤더 -->
+<header class="bg-indigo-700 text-white shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <h1 class="text-2xl font-bold tracking-wide">🧪 Test 관리</h1>
+        <button onclick="openCreateModal()"
+                class="bg-white text-indigo-700 font-semibold px-4 py-2 rounded-lg hover:bg-indigo-100 transition">
+            + 새 테스트 추가
+        </button>
+    </div>
+</header>
+
+<!-- 검색/필터 바 -->
+<div class="max-w-6xl mx-auto px-4 mt-6">
+    <div class="bg-white rounded-xl shadow p-4 flex flex-wrap gap-3 items-end">
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-sm font-medium text-gray-600 mb-1">제목 검색</label>
+            <input id="searchTitle" type="text" placeholder="제목 입력..."
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+        </div>
+        <div class="min-w-[160px]">
+            <label class="block text-sm font-medium text-gray-600 mb-1">상태 필터</label>
+            <select id="filterStatus"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <option value="">전체</option>
+                <option value="PENDING">PENDING</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="PASSED">PASSED</option>
+                <option value="FAILED">FAILED</option>
+            </select>
+        </div>
+        <button onclick="loadTests()"
+                class="bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">
+            검색
+        </button>
+        <button onclick="resetSearch()"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">
+            초기화
+        </button>
+    </div>
+</div>
+
+<!-- 테스트 목록 -->
+<main class="max-w-6xl mx-auto px-4 mt-6 pb-16">
+    <div id="loadingSpinner" class="hidden flex justify-center py-10">
+        <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        </svg>
+    </div>
+    <div id="emptyState" class="hidden text-center py-20 text-gray-400">
+        <div class="text-5xl mb-4">🧪</div>
+        <p class="text-lg">등록된 테스트가 없습니다.</p>
+    </div>
+    <div id="testGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+</main>
+
+<!-- 생성/수정 모달 -->
+<div id="formModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+        <div class="flex items-center justify-between px-6 py-4 border-b">
+            <h2 id="modalTitle" class="text-lg font-bold text-gray-800">새 테스트 추가</h2>
+            <button onclick="closeFormModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+        </div>
+        <form id="testForm" class="px-6 py-5 space-y-4">
+            <input type="hidden" id="formId" />
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">제목 <span class="text-red-500">*</span></label>
+                <input id="formTitle" type="text" required
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                       placeholder="테스트 제목" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">설명</label>
+                <textarea id="formDescription" rows="3"
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                          placeholder="테스트 설명 입력..."></textarea>
+            </div>
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">상태 <span class="text-red-500">*</span></label>
+                    <select id="formStatus"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                        <option value="PENDING">PENDING</option>
+                        <option value="IN_PROGRESS">IN_PROGRESS</option>
+                        <option value="PASSED">PASSED</option>
+                        <option value="FAILED">FAILED</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">점수</label>
+                    <input id="formScore" type="number" min="0" max="100"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                           placeholder="0" />
+                </div>
+            </div>
+            <div id="formError" class="hidden bg-red-50 border border-red-300 text-red-600 text-sm rounded-lg px-3 py-2"></div>
+        </form>
+        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+            <button onclick="closeFormModal()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                취소
+            </button>
+            <button onclick="submitForm()"
+                    class="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition">
+                저장
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 상세 모달 -->
+<div id="detailModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+        <div class="flex items-center justify-between px-6 py-4 border-b">
+            <h2 class="text-lg font-bold text-gray-800">테스트 상세</h2>
+            <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <div>
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">제목</span>
+                <p id="detailTitle" class="text-gray-800 font-semibold text-lg mt-1"></p>
+            </div>
+            <div>
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">설명</span>
+                <p id="detailDescription" class="text-gray-700 text-sm mt-1 whitespace-pre-wrap"></p>
+            </div>
+            <div class="flex gap-6">
+                <div>
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">상태</span>
+                    <p id="detailStatus" class="mt-1"></p>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">점수</span>
+                    <p id="detailScore" class="text-gray-800 font-bold text-xl mt-1"></p>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+            <button id="detailEditBtn" onclick=""
+                    class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition">
+                수정
+            </button>
+            <button id="detailDeleteBtn" onclick=""
+                    class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition">
+                삭제
+            </button>
+            <button onclick="closeDetailModal()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                닫기
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 알림 토스트 -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+    <div id="toastContent" class="px-5 py-3 rounded-xl shadow-lg text-white text-sm font-medium"></div>
+</div>
+
+<script>
+    const API = '/api/tests';
+    let currentDetailId = null;
+
+    // ── 상태 뱃지 색상 ──
+    const statusColor = {
+        PENDING:     'bg-yellow-100 text-yellow-700',
+        IN_PROGRESS: 'bg-blue-100 text-blue-700',
+        PASSED:      'bg-green-100 text-green-700',
+        FAILED:      'bg-red-100 text-red-700'
+    };
+
+    // ── 토스트 알림 ──
+    function showToast(message, success = true) {
+        const toast = document.getElementById('toast');
+        const content = document.getElementById('toastContent');
+        content.textContent = message;
+        content.className = 'px-5 py-3 rounded-xl shadow-lg text-white text-sm font-medium ' +
+            (success ? 'bg-green-500' : 'bg-red-500');
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    // ── 테스트 목록 불러오기 ──
+    async function loadTests() {
+        const title = document.getElementById('searchTitle').value.trim();
+        const status = document.getElementById('filterStatus').value;
+        const spinner = document.getElementById('loadingSpinner');
+        const grid = document.getElementById('testGrid');
+        const empty = document.getElementById('emptyState');
+
+        spinner.classList.remove('hidden');
+        grid.innerHTML = '';
+        empty.classList.add('hidden');
+
+        let url = API;
+        const params = new URLSearchParams();
+        if (title) params.append('title', title);
+        else if (status) params.append('status', status);
+        if ([...params].length) url += '?' + params.toString();
+
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('서버 오류');
+            const tests = await res.json();
+            spinner.classList.add('hidden');
+            if (tests.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            tests.forEach(t => grid.appendChild(createCard(t)));
+        } catch (e) {
+            spinner.classList.add('hidden');
+            showToast('목록 로드 실패: ' + e.message, false);
+        }
+    }
+
+    function resetSearch() {
+        document.getElementById('searchTitle').value = '';
+        document.getElementById('filterStatus').value = '';
+        loadTests();
+    }
+
+    // ── 카드 생성 ──
+    function createCard(t) {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl shadow hover:shadow-md transition p-5 flex flex-col gap-3 cursor-pointer';
+        const colorClass = statusColor[t.status] || 'bg-gray-100 text-gray-600';
+        card.innerHTML = `
+            <div class="flex items-start justify-between gap-2">
+                <h3 class="font-bold text-gray-800 text-base leading-snug flex-1">${escapeHtml(t.title)}</h3>
+                <span class="text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap ${colorClass}">${t.status}</span>
+            </div>
+            <p class="text-sm text-gray-500 line-clamp-2">${t.description ? escapeHtml(t.description) : '<span class="italic text-gray-300">설명 없음</span>'}</p>
+            <div class="flex items-center justify-between mt-auto">
+                <span class="text-indigo-600 font-bold text-lg">${t.score}<span class="text-xs text-gray-400 font-normal"> / 100</span></span>
+                <div class="flex gap-2">
+                    <button onclick="event.stopPropagation(); openEditModal(${t.id})"
+                            class="text-xs px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-semibold transition">수정</button>
+                    <button onclick="event.stopPropagation(); deleteTest(${t.id})"
+                            class="text-xs px-3 py-1 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 font-semibold transition">삭제</button>
+                </div>
+            </div>
+        `;
+        card.addEventListener('click', () => openDetailModal(t.id));
+        return card;
+    }
+
+    // ── 생성 모달 열기 ──
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = '새 테스트 추가';
+        document.getElementById('formId').value = '';
+        document.getElementById('formTitle').value = '';
+        document.getElementById('formDescription').value = '';
+        document.getElementById('formStatus').value = 'PENDING';
+        document.getElementById('formScore').value = '0';
+        hideFormError();
+        document.getElementById('formModal').classList.remove('hidden');
+    }
+
+    // ── 수정 모달 열기 ──
+    async function openEditModal(id) {
+        closeDetailModal();
+        try {
+            const res = await fetch(`${API}/${id}`);
+            if (!res.ok) throw new Error('Not found');
+            const t = await res.json();
+            document.getElementById('modalTitle').textContent = '테스트 수정';
+            document.getElementById('formId').value = t.id;
+            document.getElementById('formTitle').value = t.title;
+            document.getElementById('formDescription').value = t.description || '';
+            document.getElementById('formStatus').value = t.status;
+            document.getElementById('formScore').value = t.score;
+            hideFormError();
+            document.getElementById('formModal').classList.remove('hidden');
+        } catch (e) {
+            showToast('데이터 로드 실패', false);
+        }
+    }
+
+    function closeFormModal() {
+        document.getElementById('formModal').classList.add('hidden');
+    }
+
+    // ── 폼 제출 ──
+    async function submitForm() {
+        const id = document.getElementById('formId').value;
+        const title = document.getElementById('formTitle').value.trim();
+        const description = document.getElementById('formDescription').value.trim();
+        const status = document.getElementById('formStatus').value;
+        const score = parseInt(document.getElementById('formScore').value) || 0;
+
+        if (!title) { showFormError('제목을 입력해 주세요.'); return; }
+
+        const payload = { title, description, status, score };
+        const isEdit = !!id;
+        const url = isEdit ? `${API}/${id}` : API;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('저장 실패');
+            closeFormModal();
+            showToast(isEdit ? '수정되었습니다.' : '추가되었습니다.');
+            loadTests();
+        } catch (e) {
+            showFormError(e.message);
+        }
+    }
+
+    function showFormError(msg) {
+        const el = document.getElementById('formError');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+    }
+
+    function hideFormError() {
+        document.getElementById('formError').classList.add('hidden');
+    }
+
+    // ── 상세 모달 ──
+    async function openDetailModal(id) {
+        currentDetailId = id;
+        try {
+            const res = await fetch(`${API}/${id}`);
+            if (!res.ok) throw new Error('Not found');
+            const t = await res.json();
+            document.getElementById('detailTitle').textContent = t.title;
+            document.getElementById('detailDescription').textContent = t.description || '설명 없음';
+            const colorClass = statusColor[t.status] || 'bg-gray-100 text-gray-600';
+            document.getElementById('detailStatus').innerHTML =
+                `<span class="text-xs font-semibold px-2 py-1 rounded-full ${colorClass}">${t.status}</span>`;
+            document.getElementById('detailScore').textContent = t.score + ' / 100';
+            document.getElementById('detailEditBtn').onclick = () => openEditModal(id);
+            document.getElementById('detailDeleteBtn').onclick = () => { closeDetailModal(); deleteTest(id); };
+            document.getElementById('detailModal').classList.remove('hidden');
+        } catch (e) {
+            showToast('상세 로드 실패', false);
+        }
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').classList.add('hidden');
+        currentDetailId = null;
+    }
+
+    // ── 삭제 ──
+    async function deleteTest(id) {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+        try {
+            const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('삭제 실패');
+            showToast('삭제되었습니다.');
+            loadTests();
+        } catch (e) {
+            showToast(e.message, false);
+        }
+    }
+
+    // ── XSS 방지 ──
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(text));
+        return div.innerHTML;
+    }
+
+    // ── 키보드 단축키 ──
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            closeFormModal();
+            closeDetailModal();
+        }
+    });
+
+    // ── 초기 로드 ──
+    loadTests();
+</script>
+</body>
+</html>
