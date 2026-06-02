@@ -37,6 +37,7 @@ anthropic:
 
 app:
   project-root: d:/jarvis-agent
+  workspace-root: d:/jarvis-workspaces
 
 logging:
   level:
