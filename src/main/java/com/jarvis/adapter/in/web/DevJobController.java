@@ -27,9 +27,12 @@ public class DevJobController {
         }
         DevJob job = jobService.submitJob(command.trim());
         return ResponseEntity.ok(Map.of(
-            "jobId",   job.getId(),
-            "status",  job.getStatus().name(),
-            "command", job.getCommand()
+            "jobId",         job.getId(),
+            "status",        job.getStatus().name(),
+            "command",       job.getCommand(),
+            "jobType",       job.getJobType()        != null ? job.getJobType()        : "MODIFY_JARVIS",
+            "projectType",   job.getProjectType()    != null ? job.getProjectType()    : "UNKNOWN",
+            "workspacePath", job.getWorkspacePath()  != null ? job.getWorkspacePath()  : ""
         ));
     }
 
