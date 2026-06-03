@@ -55,6 +55,18 @@ public class DevJob {
     /** Claude CLI 종료 코드 */
     private Integer exitCode;
 
+    /** 작업 유형: MODIFY_JARVIS | NEW_PROJECT */
+    @Column(length = 20)
+    private String jobType;
+
+    /** 프로젝트 유형: CHROME_EXTENSION | SPRING_BOOT | WEB_APP | GAME | ... */
+    @Column(length = 30)
+    private String projectType;
+
+    /** 실제 작업이 수행된 디렉토리 절대 경로 */
+    @Column(length = 500)
+    private String workspacePath;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
     private LocalDateTime startedAt;
@@ -67,13 +79,13 @@ public class DevJob {
     // ── 상태 전이 메서드 ──────────────────────────────────────
 
     public void markRunning() {
-        this.status = JobStatus.RUNNING;
+        this.status    = JobStatus.RUNNING;
         this.startedAt = LocalDateTime.now();
     }
 
     public void markDone(String log, String diff, String stat,
                          String changed, String summary, Boolean buildOk, int exitCode) {
-        this.status = (exitCode == 0) ? JobStatus.DONE : JobStatus.FAILED;
+        this.status       = (exitCode == 0) ? JobStatus.DONE : JobStatus.FAILED;
         this.logOutput    = log;
         this.gitDiff      = diff;
         this.diffStat     = stat;
@@ -85,10 +97,10 @@ public class DevJob {
     }
 
     public void markFailed(String log, String error) {
-        this.status       = JobStatus.FAILED;
-        this.logOutput    = log;
-        this.summary      = error;
-        this.completedAt  = LocalDateTime.now();
+        this.status      = JobStatus.FAILED;
+        this.logOutput   = log;
+        this.summary     = error;
+        this.completedAt = LocalDateTime.now();
     }
 
     public void markCancelled() {
