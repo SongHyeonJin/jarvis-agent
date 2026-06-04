@@ -1,17 +1,19 @@
 package com.jarvis.tool;
 
-import com.jarvis.application.AutoDevService;
+import com.jarvis.application.DevJobService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+// @Component 제거 — GPT tool 목록에서 제외
+// 이유: AutoDevService는 Windows Terminal 팝업을 열어 실제 파일 수정이 안 됨.
+//       개발 요청은 반드시 ClaudeCliExecutor 경로(DevJobService)를 통해야 함.
+//       JS CODE_GEN_PATS → handleCodeGen() → /api/dev/jobs → DevJobService → ClaudeCliExecutor
 
 import java.util.List;
 import java.util.Map;
 
-@Component
 @RequiredArgsConstructor
 public class AutoDevTool implements ToolProvider {
 
-    private final AutoDevService autoDevService;
+    private final DevJobService devJobService;
 
     @Override
     public List<ToolFunction> getToolFunctions() {
@@ -43,17 +45,11 @@ public class AutoDevTool implements ToolProvider {
 
             @Override
             public String execute(Map<String, Object> args) {
+                // 이 코드는 @Component가 없어 Spring에 등록되지 않음 → 절대 호출 안 됨
+                // 개발 요청은 UI의 CODE_GEN_PATS → handleCodeGen() → /api/dev/jobs → DevJobService 경로를 사용
                 String command = String.valueOf(args.getOrDefault("command", ""));
-                AutoDevService.DevResult result = autoDevService.develop(command);
-                StringBuilder sb = new StringBuilder(result.summary());
-                if (!result.createdFiles().isEmpty()) {
-                    sb.append(" 생성된 파일 목록: ");
-                    sb.append(String.join(", ", result.createdFiles()));
-                }
-                if (!result.errors().isEmpty()) {
-                    sb.append(" 오류: ").append(String.join(", ", result.errors()));
-                }
-                return sb.toString();
+                var job = devJobService.submitJob(command);
+                return "코드 개발 작업이 백그라운드에서 시작되었습니다. (Job #" + job.getId() + ")";
             }
         });
     }
