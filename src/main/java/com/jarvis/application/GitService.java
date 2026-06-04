@@ -34,7 +34,9 @@ public class GitService {
         }
         if (out.isBlank()) return Collections.emptyList();
         return Arrays.stream(out.split("[\r\n]+"))
-                     .map(String::trim).filter(s -> !s.isEmpty()).toList();
+                     .map(String::trim)
+                     .filter(s -> !s.isEmpty() && !s.startsWith("warning:") && !s.startsWith("error:"))
+                     .toList();
     }
 
     public boolean isGitRepo() {
