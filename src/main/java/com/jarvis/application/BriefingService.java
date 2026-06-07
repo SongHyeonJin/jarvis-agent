@@ -31,6 +31,7 @@ public class BriefingService {
 
         List<Todo> todos = todoRepository.findAll().stream()
                 .filter(t -> !t.isDone())
+                .filter(t -> t.getDueDate() == null || t.getDueDate().equals(today))
                 .toList();
 
         List<Schedule> schedules = scheduleRepository.findByStartTimeBetween(startOfDay, endOfDay);
