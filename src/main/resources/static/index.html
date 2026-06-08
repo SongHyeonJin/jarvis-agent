@@ -32,6 +32,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .sdot{width:8px;height:8px;border-radius:50%;background:var(--dim);transition:all .4s;}
 .slbl{color:var(--dim);letter-spacing:1px;transition:color .4s;}
 
+[data-state=inactive]  .sdot{background:rgba(60,0,90,.85);box-shadow:0 0 4px rgba(60,0,90,.5);animation:blink 7s ease-in-out infinite;}
+[data-state=inactive]  .slbl{color:rgba(100,30,140,.9);}
 [data-state=standby]   .sdot{background:var(--purple);box-shadow:0 0 7px var(--purple);animation:blink 3.5s ease-in-out infinite;}
 [data-state=standby]   .slbl{color:var(--purple);}
 [data-state=activating].sdot{background:#fff;box-shadow:0 0 18px #fff;}
@@ -91,8 +93,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   white-space:pre-wrap;word-break:keep-all;overflow-wrap:break-word;}
 .ms .mt{color:var(--dim);font-size:9px;text-align:center;letter-spacing:1px;width:100%;border:none;background:transparent;}
 
-/* ORB CENTER */
-.oa{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+/* CENTER STAGE — 카드 + ORB 영역 전체 컨테이너 */
+.center-stage{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+
+/* ORB CENTER — orb + hud 전용 공간, cards와 독립 */
+.oa{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
 .oa::before,.oa::after{content:'';position:absolute;width:72px;height:72px;pointer-events:none;border-color:rgba(0,180,255,.10);border-style:solid;}
 .oa::before{top:14px;left:14px;border-width:1px 0 0 1px;}
 .oa::after{bottom:14px;right:14px;border-width:0 1px 1px 0;}
@@ -103,12 +108,13 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   box-shadow:0 0 28px rgba(0,212,255,.22),inset 0 0 22px rgba(0,212,255,.04);transition:all .3s;}
 .sbtn:hover{background:rgba(0,212,255,.08);box-shadow:0 0 44px rgba(0,212,255,.38),inset 0 0 28px rgba(0,212,255,.08);}
 .ssub{font-size:10px;color:var(--dim);letter-spacing:2px;}
-.owrap{position:relative;width:420px;height:420px;display:flex;align-items:center;justify-content:center;}
+.owrap{position:relative;width:420px;height:420px;display:flex;align-items:center;justify-content:center;transform:translateY(-58px);}
 .ring{position:absolute;border-radius:50%;border:1px solid;}
 .r1{width:390px;height:390px;border-color:rgba(0,212,255,.13);border-style:dashed;animation:spinCW 55s linear infinite;}
 .r2{width:328px;height:328px;border-color:rgba(0,212,255,.10);border-style:dotted;animation:spinCCW 34s linear infinite;}
 .r3{width:268px;height:268px;border-color:rgba(0,212,255,.09);border-style:dashed;animation:spinCW 19s linear infinite;}
 @keyframes spinCW{to{transform:rotate(360deg)}}@keyframes spinCCW{to{transform:rotate(-360deg)}}
+[data-state=inactive]  .r1{border-color:rgba(60,0,90,.08);}[data-state=inactive] .r3{border-color:rgba(60,0,90,.06);}
 [data-state=standby]   .r1{border-color:rgba(136,51,255,.17);}[data-state=standby] .r3{border-color:rgba(136,51,255,.11);}
 [data-state=activating].r1{border-color:rgba(255,255,255,.55);animation-duration:3s;}[data-state=activating].r2{border-color:rgba(0,212,255,.75);animation-duration:2s;}[data-state=activating].r3{border-color:rgba(255,255,255,.65);animation-duration:1.5s;}
 [data-state=briefing]  .r1{border-color:rgba(255,208,64,.20);}[data-state=briefing] .r3{border-color:rgba(255,208,64,.20);}
@@ -126,6 +132,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .orbring{position:absolute;width:100%;height:100%;border-radius:50%;border:1px solid rgba(0,212,255,.25);animation:oexpand 3.2s ease-out infinite;}
 @keyframes opulse{0%,100%{opacity:.45;transform:scale(.87);}50%{opacity:1;transform:scale(1.1);}}
 @keyframes oexpand{0%{transform:scale(1);opacity:.38;}100%{transform:scale(1.95);opacity:0;}}
+[data-state=inactive] .orb{background:radial-gradient(circle at 37% 34%,rgba(40,0,70,.18),rgba(0,6,14,.99) 75%);box-shadow:0 0 16px rgba(40,0,70,.06);}
+[data-state=inactive] .orbin{background:radial-gradient(circle at 40% 37%,rgba(70,0,100,.28),transparent);animation-duration:9s;}
+[data-state=inactive] .orbring{border-color:rgba(70,0,100,.08);animation-duration:9s;}
 [data-state=standby] .orb{background:radial-gradient(circle at 37% 34%,rgba(100,35,200,.26),rgba(0,6,14,.98) 68%);box-shadow:0 0 32px rgba(100,35,200,.1);}
 [data-state=standby] .orbin{background:radial-gradient(circle at 40% 37%,rgba(130,55,255,.48),transparent);animation-duration:5s;}
 [data-state=standby] .orbring{border-color:rgba(130,55,255,.18);animation-duration:5s;}
@@ -140,19 +149,22 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 [data-state=processing] .orbin{animation-duration:.72s;}[data-state=processing] .orbring{border-color:rgba(255,136,0,.4);animation-duration:.72s;}
 [data-state=speaking] .orb{background:radial-gradient(circle at 37% 34%,rgba(0,212,255,.54),rgba(0,46,76,.66) 56%,rgba(0,6,14,.95));box-shadow:0 0 68px rgba(0,212,255,.44),0 0 140px rgba(0,212,255,.18),inset 0 0 58px rgba(0,212,255,.18);}
 [data-state=speaking] .orbin{animation-duration:.88s;}[data-state=speaking] .orbring{border-color:rgba(0,212,255,.55);animation-duration:.88s;}
-.olbl{position:absolute;bottom:-34px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;white-space:nowrap;transition:color .4s,text-shadow .4s;}
+/* 상태 텍스트 — .oa 안 absolute, orb 아래 중앙 고정 */
+.olbl{position:absolute;left:50%;top:calc(50% + 168px);transform:translateX(-50%);z-index:320;
+  pointer-events:none;text-align:center;font-size:11px;letter-spacing:3px;color:var(--dim);
+  text-transform:uppercase;white-space:nowrap;transition:color .4s,text-shadow .4s;}
 [data-state=activating] .olbl{color:#fff;text-shadow:0 0 14px #fff;}[data-state=briefing] .olbl{color:var(--gold);text-shadow:0 0 8px var(--gold);}
 [data-state=listening]  .olbl{color:var(--green);text-shadow:0 0 8px var(--green);}[data-state=processing] .olbl{color:var(--orange);text-shadow:0 0 8px var(--orange);}
 [data-state=speaking]   .olbl{color:var(--cyan);text-shadow:0 0 10px var(--cyan);}
 
 /* HUD */
-.hud{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:min(680px,80%);display:flex;flex-direction:column;align-items:stretch;gap:7px;}
+.hud{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:min(680px,80%);display:flex;flex-direction:column;align-items:stretch;gap:7px;z-index:180;}
 .urow{display:flex;align-items:center;gap:7px;min-height:16px;}
 .upfx{font-size:9px;letter-spacing:1px;color:var(--cyan);white-space:nowrap;flex-shrink:0;}
 #trUser{font-size:12px;color:var(--txt);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;direction:rtl;text-align:left;unicode-bidi:plaintext;}
 
 /* 2-LINE JARVIS BOX */
-.jbox{position:relative;border:1px solid var(--cyan2);background:rgba(0,5,12,.88);backdrop-filter:blur(10px);padding:10px 14px;}
+.jbox{position:relative;border:1px solid var(--cyan2);background:rgba(0,5,12,.88);backdrop-filter:blur(10px);padding:10px 14px;z-index:1;}
 .jbox::before,.jbox::after{content:'';position:absolute;width:10px;height:10px;border-color:var(--cyan);border-style:solid;}
 .jbox::before{top:-1px;right:-1px;border-width:1px 1px 0 0;}
 .jbox::after{bottom:-1px;left:-1px;border-width:0 0 1px 1px;}
@@ -199,11 +211,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .fbtn:hover{background:rgba(255,51,51,.1);box-shadow:0 0 8px rgba(255,51,51,.3);}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-/* CARDS SECTION — inside .oa, above .owrap */
-.cards-section{flex-shrink:0;display:none;width:min(100%,440px);padding:0 8px 14px;
-  overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;
-  position:relative;z-index:60;}
-.cards-row{display:flex;gap:6px;min-width:min-content;align-items:flex-start;flex-wrap:nowrap;}
+/* CARDS SECTION — .center-stage 기준 absolute (oa 밖) */
+.cards-section{display:none;position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  width:min(92%,780px);z-index:250;padding:0 8px;
+  overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.cards-row{display:flex;gap:8px;min-width:min-content;align-items:flex-start;justify-content:center;flex-wrap:nowrap;}
 .card{flex-shrink:0;width:170px;padding:7px 10px;border-radius:3px;cursor:pointer;transition:all .2s;position:relative;}
 .card:hover{transform:translateY(-1px);}
 .card-todo{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.22);}
@@ -236,6 +248,44 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 /* TODAY TASK BANNER — hidden, replaced by .oa cards */
 .todo-banner{display:none!important;}
+
+/* DEV JOB MODAL — cyan theme */
+.dev-modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);align-items:center;justify-content:center;}
+.dev-modal.show{display:flex;}
+.dev-modal-box{background:rgba(0,4,12,.98);border:1px solid var(--cyan);width:min(900px,96vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(0,212,255,.18);}
+.dev-modal-head{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.dev-modal-kicker{font-size:7px;letter-spacing:3px;color:var(--dim);margin-bottom:4px;}
+.dev-modal-head h2{font-size:13px;letter-spacing:4px;color:var(--cyan);text-shadow:var(--glow);margin:0;}
+.dev-modal-actions{display:flex;gap:8px;align-items:center;}
+.dev-mini-btn{padding:3px 12px;font-family:inherit;font-size:9px;letter-spacing:2px;cursor:pointer;border-radius:2px;text-transform:uppercase;border:1px solid var(--border);background:transparent;color:var(--dim);transition:all .2s;}
+.dev-mini-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+.dev-mini-btn.danger{color:var(--red);border-color:rgba(255,51,51,.5);}
+.dev-mini-btn.danger:hover{background:rgba(255,51,51,.1);border-color:var(--red);}
+.dev-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.dev-meta-grid>div{display:flex;flex-direction:column;gap:2px;}
+.dev-meta-grid span{font-size:7px;letter-spacing:2px;color:var(--dim);}
+.dev-meta-grid b{font-size:10px;color:var(--txt);font-weight:normal;}
+.dev-command{padding:6px 18px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.dev-command span{font-size:7px;letter-spacing:2px;color:var(--dim);display:block;margin-bottom:3px;}
+.dev-command p{font-size:10px;color:var(--cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;}
+.dev-log-title{font-size:7px;letter-spacing:2px;color:var(--dim);padding:6px 18px 0;flex-shrink:0;}
+.dev-log-box{flex:1;overflow-y:auto;padding:6px 18px 12px;font-size:9.5px;font-family:'Courier New',monospace;min-height:120px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;line-height:1.55;}
+.dev-log-sys{color:var(--cyan);white-space:pre-wrap;word-break:break-all;}
+.dev-log-progress{color:var(--dim);white-space:pre-wrap;word-break:break-all;}
+.dev-log-file{color:var(--green);white-space:pre-wrap;word-break:break-all;}
+.dev-log-error{color:var(--red);white-space:pre-wrap;word-break:break-all;}
+.dev-log-done{color:var(--gold);font-weight:bold;white-space:pre-wrap;word-break:break-all;}
+.dev-log-warn{color:var(--orange);white-space:pre-wrap;word-break:break-all;}
+/* RIGHT PANEL — DEV AGENT section */
+.dev-launch-sec{border-color:rgba(0,212,255,.30)!important;}
+.dev-open-btn{width:100%;font-family:inherit;font-size:9px;padding:5px 8px;background:rgba(0,212,255,.08);
+  color:var(--cyan);border:1px solid rgba(0,212,255,.35);cursor:pointer;letter-spacing:1px;
+  border-radius:2px;text-align:center;transition:all .2s;margin-top:6px;display:block;}
+.dev-open-btn:hover{background:rgba(0,212,255,.18);border-color:var(--cyan);}
+.dev-sum{font-size:9px;margin-bottom:4px;}
+.dev-sum-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-size:9px;color:var(--dim);}
+.dev-sum-val{color:var(--txt);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;}
+.dev-sum-val.ok{color:var(--green)!important;}.dev-sum-val.run{color:var(--orange)!important;}.dev-sum-val.err{color:var(--red)!important;}
 
 /* DEV DASHBOARD REPORT */
 .dev-report{background:rgba(0,8,4,.96);border:1px solid rgba(0,255,136,.22);border-radius:3px;
@@ -295,6 +345,32 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   </div>
 </div>
 
+<!-- DEV JOB MODAL -->
+<div class="dev-modal" id="devModal">
+  <div class="dev-modal-box">
+    <div class="dev-modal-head">
+      <div>
+        <div class="dev-modal-kicker">J.A.R.V.I.S.</div>
+        <h2>DEV AGENT</h2>
+      </div>
+      <div class="dev-modal-actions">
+        <button class="dev-mini-btn" onclick="closeDevModal()">닫기</button>
+        <button class="dev-mini-btn danger" id="devModalCancelBtn" onclick="cancelDevJob()">취소</button>
+      </div>
+    </div>
+    <div class="dev-meta-grid">
+      <div><span>JOB</span><b id="devModalJobId">생성 중...</b></div>
+      <div><span>STATUS</span><b id="devModalStatus">PENDING</b></div>
+      <div><span>JOB TYPE</span><b id="devModalType">분석 중...</b></div>
+      <div><span>PROJECT TYPE</span><b id="devModalProjType" style="font-size:9px">-</b></div>
+      <div style="grid-column:1/-1"><span>PROJECT PATH</span><b id="devModalProject" style="font-size:9px">-</b></div>
+    </div>
+    <div class="dev-command"><span>COMMAND</span><p id="devModalCommand"></p></div>
+    <div class="dev-log-title">CLAUDE CODE CLI STREAM</div>
+    <div class="dev-log-box" id="devModalLog"></div>
+  </div>
+</div>
+
 <main class="main">
   <!-- LEFT PANEL -->
   <aside class="panel pl">
@@ -324,60 +400,68 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     </div>
     <div class="sec">
       <div class="stitle">CONTROLS</div>
-      <div class="pnote">● 활성화: 박수 / "대현자야"<br>● 종료: "종료" / "고마워" / "그만"<br>● [Space]: 수동 활성화/종료<br>● 30초 침묵 → 대기 모드</div>
+      <div class="pnote">● 활성화: 박수 / "대현자야"<br>● 종료: "종료" / "고마워" / "그만"<br>● [Space]: 수동 활성화/종료<br>● 60초 침묵 → 대기 모드 (STANDBY)<br>● 명시 종료 → 비활성화 (INACTIVE)</div>
     </div>
   </aside>
 
-  <!-- CENTER ORB -->
-  <div class="oa">
-    <div class="inov" id="inov">
-      <button class="sbtn" id="sbtn">
-        <span>대현자 시스템 가동</span>
-        <span class="ssub">클릭하여 마이크 권한 허용</span>
-      </button>
-    </div>
-    <!-- CARDS (Todo + Memo) — .oa 내, 오브 위 -->
+  <!-- CENTER STAGE — cards + orb 영역 -->
+  <div class="center-stage">
+    <!-- CARDS (Todo + Memo) — .oa 밖, .center-stage 안 -->
     <div class="cards-section" id="cardsSection">
       <div class="cards-row" id="cardsRow">
         <button class="cards-add-btn" onclick="openAddModal()" title="추가">+</button>
       </div>
     </div>
 
-    <div class="owrap">
-      <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
-      <svg class="mc" id="mc" viewBox="0 0 420 420"></svg>
-      <div class="orb" id="orb"><div class="orbin"></div><div class="orbring"></div></div>
+    <!-- ORB + HUD — cards와 완전히 독립 -->
+    <div class="oa">
+      <div class="inov" id="inov">
+        <button class="sbtn" id="sbtn">
+          <span>대현자 시스템 가동</span>
+          <span class="ssub">클릭하여 마이크 권한 허용</span>
+        </button>
+      </div>
+      <div class="owrap">
+        <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+        <svg class="mc" id="mc" viewBox="0 0 420 420"></svg>
+        <div class="orb" id="orb"><div class="orbin"></div><div class="orbring"></div></div>
+      </div>
       <div class="olbl" id="olbl">대기 중</div>
-    </div>
-    <div class="hud">
-      <div class="urow">
-        <span class="upfx">[ 현진님 ]</span>
-        <span id="trUser"></span>
-      </div>
-      <div class="jbox">
-        <span class="jtag">J.A.R.V.I.S.</span>
-        <span class="jtts" id="jtts"></span>
-        <div class="jwindow" id="jwindow">
-          <div class="jl jl1-style" id="jl1"></div>
-          <div class="jl" id="jl2"></div>
+      <div class="hud">
+        <div class="urow">
+          <span class="upfx">[ 현진님 ]</span>
+          <span id="trUser"></span>
         </div>
-        <div class="pdots" id="pdots">
-          <div class="pdot"></div><div class="pdot"></div><div class="pdot"></div>
+        <div class="jbox">
+          <span class="jtag">J.A.R.V.I.S.</span>
+          <span class="jtts" id="jtts"></span>
+          <div class="jwindow" id="jwindow">
+            <div class="jl jl1-style" id="jl1"></div>
+            <div class="jl" id="jl2"></div>
+          </div>
+          <div class="pdots" id="pdots">
+            <div class="pdot"></div><div class="pdot"></div><div class="pdot"></div>
+          </div>
         </div>
+        <canvas id="wfc" height="44"></canvas>
       </div>
-      <canvas id="wfc" height="44"></canvas>
     </div>
   </div>
 
   <!-- RIGHT PANEL -->
   <aside class="panel pr">
-    <div class="sec sec-cg" id="cgsec" style="display:none">
-      <div class="stitle" style="display:flex;justify-content:space-between;align-items:center">
-        <span>AUTO DEV REPORT</span>
-        <button id="cgCancelBtn" onclick="cancelDevJob()" style="display:none;font-size:8px;padding:1px 6px;background:transparent;color:var(--red);border:1px solid var(--red);cursor:pointer;font-family:inherit;letter-spacing:1px;border-radius:2px">취소</button>
+    <!-- DEV AGENT — 항상 표시 (최상단) -->
+    <div class="sec dev-launch-sec" id="devLaunchSec">
+      <div class="stitle">DEV AGENT</div>
+      <div class="dev-sum" id="devSummary">
+        <div class="dev-sum-row"><span>Job</span><span class="dev-sum-val" id="sumJobId">—</span></div>
+        <div class="dev-sum-row"><span>상태</span><span class="dev-sum-val" id="sumStatus">—</span></div>
+        <div class="dev-sum-row"><span>유형</span><span class="dev-sum-val" id="sumType">—</span></div>
+        <div class="dev-sum-row" id="sumFolderRow" style="display:none"><span>폴더</span><span class="dev-sum-val" id="sumFolder" style="font-size:8px">—</span></div>
       </div>
-      <div class="cglog" id="cglog"></div>
-      <div id="devReport"></div>
+      <button class="dev-open-btn" onclick="openDevModal()">📋 DEV 로그 열기</button>
+      <!-- 완료 리포트 -->
+      <div id="devReport" style="margin-top:6px;"></div>
     </div>
     <div class="sec" id="bsec" style="display:none">
       <div class="stitle">TODAY'S BRIEFING</div>
@@ -406,7 +490,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 // ═══════════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════════
-const ST = {INIT:'init',STANDBY:'standby',ACTIVATING:'activating',
+const ST = {INIT:'init',INACTIVE:'inactive',STANDBY:'standby',ACTIVATING:'activating',
   BRIEFING:'briefing',LISTENING:'listening',PROCESSING:'processing',SPEAKING:'speaking'};
 
 // Wake word — rolling buffer + multiple phonetic variants
@@ -417,18 +501,23 @@ const WAKE_PATS = [
 const WAKE_BUF_LIMIT = 60;
 
 const EXIT_WORDS = ['종료','고마워','그만','꺼줘','닫아'];
-const SILENCE_MS  = 30_000;
+const SILENCE_MS       = 60_000;  // 60초 침묵 → 대기중 (STANDBY) 전환
+const SPEECH_GAP_MS    =  8_000;  // 마지막 음성 후 8초 내면 아직 말하는 중으로 판단 (긴 요청 보호)
 
 // Clap detection thresholds
 const CLAP_HI = 0.55;
 const CLAP_LO = 0.07;
 
-// Code-gen trigger patterns — "개발해줘" / "코드 구현해줘" 명시적 워딩만 허용
+// Code-gen trigger patterns
+// 포함 패턴: ~~개발해줘 / ~~구현해줘 / ~~만들어줘 / ~~생성해줘 + 코드 관련
 const CODE_GEN_PATS = [
   /개발\s*(?:해줘|해주세요|해봐|해줘요)/,
   /코드\s*(?:구현|작성|만들어|추가)\s*(?:해줘|해주세요|해봐)/,
   /구현\s*(?:해줘|해주세요|해봐|해줘요)/,
   /(?:기능|서비스|페이지|화면|앱)\s*(?:개발|구현)\s*(?:해줘|해주세요|해봐)/,
+  // 신규: ~~만들어줘 / ~~생성해줘 (회원가입 API, 크롬 확장, Kafka Consumer 등)
+  /만들어\s*(?:줘|주세요|봐|줘요)/,
+  /생성\s*(?:해줘|해주세요|해봐|해줘요)/,
 ];
 
 // Todo/Memo 직접 등록 패턴
@@ -456,6 +545,7 @@ let audioCtx, analyser, recog;
 let recogOn = false;
 let convId = null, msgCnt = 0;
 let silTimer = null;
+let lastSpeechTime = 0;   // 마지막 음성 감지 시각 (interim 포함)
 let prevAmp = 0;
 let selVoice = null;
 let activeSource = null;
@@ -463,6 +553,12 @@ let typingStop = false;
 let isSpeaking = false;
 let isHandling = false;
 let activeJobId = null;
+let _activeJobType        = null;
+let _activeWorkspacePath  = null;
+let _activeProjectType    = null;
+// ── 브리핑/TTS 중 STT 처리 잠금 플래그 ───────────────
+let isBriefing        = false;  // 브리핑 진행 중 (TTS 포함)
+let ignoreSpeechInput = false;  // TTS 종료 직후 버퍼 플러시 대기 중
 const tdbuf = new Float32Array(256);
 const wfbuf = new Uint8Array(512);
 
@@ -490,13 +586,12 @@ function domMeasure(s) {
 document.addEventListener('DOMContentLoaded', () => {
   drawMC();
   tickClock(); setInterval(tickClock, 1000);
-  loadCards();
   document.getElementById('sbtn').onclick = boot;
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && e.target === document.body) {
       e.preventDefault();
-      if (appSt === ST.STANDBY) activate();
-      else if (appSt === ST.LISTENING) deactivate('네, 현진님. 대기 모드로 전환합니다.');
+      if (appSt === ST.INACTIVE || appSt === ST.STANDBY) activate();
+      else if (appSt === ST.LISTENING) deactivate('네, 현진님. 언제든지 부르십시오.');
     }
   });
   if (window.speechSynthesis) {
@@ -532,7 +627,7 @@ async function boot() {
     document.getElementById('sessec').style.display = '';
     setOnline('vst'); setOnline('ast');
     loadCards();
-    setState(ST.STANDBY);
+    setState(ST.INACTIVE);
     setFt('준비 완료 — 박수 또는 "대현자야" / [Space]로 활성화');
   } catch(e) {
     document.getElementById('inov').style.display = '';
@@ -564,8 +659,8 @@ function rafLoop() {
   for (let i = 0; i < tdbuf.length; i++) { const a = Math.abs(tdbuf[i]); if (a > peak) peak = a; }
   document.getElementById('mbar').style.width = (peak * 100).toFixed(1) + '%';
 
-  // Clap detection: rapid jump from quiet → loud (STANDBY=활성화 / SPEAKING·BRIEFING=인터럽트)
-  const clapable = appSt === ST.STANDBY || appSt === ST.SPEAKING || appSt === ST.BRIEFING;
+  // Clap detection: rapid jump from quiet → loud (INACTIVE·STANDBY=활성화 / SPEAKING·BRIEFING=인터럽트)
+  const clapable = appSt === ST.INACTIVE || appSt === ST.STANDBY || appSt === ST.SPEAKING || appSt === ST.BRIEFING;
   if (clapable && prevAmp < CLAP_LO && peak > CLAP_HI) activate();
   prevAmp = peak * 0.22 + prevAmp * 0.78;
 
@@ -688,8 +783,19 @@ function setupRecog() {
       }
     }
 
-    // STANDBY + SPEAKING + BRIEFING 상태에서 웨이크워드 감지 → 인터럽트 or 활성화
-    if (appSt === ST.STANDBY || appSt === ST.SPEAKING || appSt === ST.BRIEFING) {
+    // ── 브리핑 중 / STT 무시 플래그 활성 시: 전체 처리 차단 ──
+    // TTS 음성이 마이크에 들어와 사용자 요청으로 처리되는 것을 방지
+    if (isBriefing || ignoreSpeechInput) return;
+
+    // 음성 활동 감지: interim/final 결과가 있으면 마지막 음성 시각 갱신
+    // LISTENING 상태에서는 반드시 침묵 타이머를 리셋 (긴 요청 보호)
+    if (interim || finalText) {
+      lastSpeechTime = Date.now();
+      if (appSt === ST.LISTENING) resetSil();
+    }
+
+    // INACTIVE + STANDBY + SPEAKING + BRIEFING 상태에서 웨이크워드 감지 → 인터럽트 or 활성화
+    if (appSt === ST.INACTIVE || appSt === ST.STANDBY || appSt === ST.SPEAKING || appSt === ST.BRIEFING) {
       // 1) Check each alternative + interim individually
       for (const t of [...allFinals, interim].filter(Boolean)) {
         if (WAKE_PATS.some(p => p.test(t.replace(/\s/g,'')))) {
@@ -733,18 +839,26 @@ function stopRecog()  { recogOn=false; try{recog?.stop();}catch(_){} }
 //  ACTIVATION / DEACTIVATION
 // ═══════════════════════════════════════════════════════════
 async function activate() {
-  // STANDBY: 정상 활성화
-  // SPEAKING / BRIEFING: 말하는 도중 호출 → 즉각 인터럽트 후 청취 모드 전환
+  // 활성화 가능한 상태:
+  //   INACTIVE  (비활성화) → 풀 브리핑 진행
+  //   STANDBY   (대기중)   → 브리핑 없이 즉시 청취 ("네, 현진님. 무엇을 도와드릴까요?")
+  //   SPEAKING / BRIEFING  → 인터럽트
   const interruptable = appSt === ST.SPEAKING || appSt === ST.BRIEFING;
-  if (appSt !== ST.STANDBY && !interruptable) return;
+  const isInactive    = appSt === ST.INACTIVE;
+  const isStandby     = appSt === ST.STANDBY;
+
+  if (!isInactive && !isStandby && !interruptable) return;
 
   wakeBuffer = '';
 
   if (interruptable) {
     // ── 인터럽트 프로토콜 ──────────────────────────────
-    isHandling = false;         // 진행 중 요청 잠금 해제 → 새 명령 즉각 수신 가능
-    typingStop = true;          // 타이핑 애니메이션 즉각 중단
-    stopAudio();                // 오디오 재생 즉각 정지
+    isHandling = false;
+    isBriefing = false;
+    ignoreSpeechInput = false;
+    console.log('[VoiceState] interrupt — briefing/ignore flags cleared');
+    typingStop = true;
+    stopAudio();
     clearLines();
     document.getElementById('stopbtn').style.display = '';
     setState(ST.LISTENING);
@@ -754,21 +868,56 @@ async function activate() {
     return;
   }
 
-  // ── 정상 활성화 흐름 ──────────────────────────────────
+  if (isStandby) {
+    // ── 대기중 → 빠른 재활성화 (브리핑 없음) ──────────
+    setState(ST.ACTIVATING);
+    playActivationSound();
+    await delay(200);
+    await speakTTS('네, 현진님. 무엇을 도와드릴까요?');
+    setState(ST.LISTENING);
+    document.getElementById('stopbtn').style.display = '';
+    resetSil();
+    setFt('세션 활성 — 말씀하세요');
+    startRecog();
+    return;
+  }
+
+  // ── 비활성화 → 풀 브리핑 (INACTIVE 기본 흐름) ────────
   setState(ST.ACTIVATING);
   playActivationSound();
+  // 브리핑 시작 — STT 처리 완전 잠금 (TTS 음성이 마이크로 재인식되는 것 방지)
+  isBriefing = true;
+  ignoreSpeechInput = true;
+  console.log('[VoiceState] briefing started — STT input locked');
   await delay(320);
+  console.log('[VoiceState] listening stopped for TTS (activation greeting)');
   await speakTTS('네, 현진님. 대현자의 프로토콜을 개시합니다.');
   setState(ST.BRIEFING);
+  console.log('[VoiceState] listening stopped for TTS (daily briefing)');
   await doBriefing();
+  isBriefing = false;
+  console.log('[VoiceState] briefing finished — transitioning to LISTENING');
   setState(ST.LISTENING);
   document.getElementById('stopbtn').style.display = '';
   resetSil();
   setFt('세션 활성 — 말씀하세요');
+  // STT 버퍼 완전 플러시를 위한 대기 후 잠금 해제 + 청취 시작
+  await delay(700);
+  ignoreSpeechInput = false;
+  console.log('[VoiceState] listening started — STT input unlocked');
+  startRecog();
 }
 
+/**
+ * 사용자가 명시적으로 "종료/그만/고마워"를 말하거나 버튼을 누를 때 호출.
+ * → INACTIVE 상태 (비활성화) 로 전환.
+ * 침묵 타임아웃에 의한 대기 전환은 goStandby() 사용.
+ */
 async function deactivate(msg) {
   isHandling = false;
+  isBriefing = false;
+  ignoreSpeechInput = false;
+  console.log('[VoiceState] deactivate — briefing/ignore flags cleared');
   clearTimeout(silTimer);
   stopAudio();
   typingStop = true;
@@ -777,8 +926,8 @@ async function deactivate(msg) {
   document.getElementById('trUser').textContent = '';
   if (msg) await speakTTS(msg);
   addMsg('s','─── 세션 종료 ───');
-  setState(ST.STANDBY);
-  setFt('대기 중 — 박수 또는 "대현자야" / [Space]로 활성화');
+  setState(ST.INACTIVE);   // ← INACTIVE (비활성화), 다음 활성화 시 풀 브리핑 진행
+  setFt('비활성화 — "대현자야" 또는 박수로 활성화');
 }
 
 function stopAudio() {
@@ -793,9 +942,11 @@ function stopAudio() {
 // ═══════════════════════════════════════════════════════════
 async function doBriefing() {
   try {
+    // 활성화 브리핑 시 항상 최신 데이터 조회
     const d = await fetch('/api/briefing/daily').then(r=>r.json());
     renderBriefing(d);
-    loadCards();
+    await loadCards();  // 카드 UI + 브리핑 섹션 최신 상태로 갱신 후 TTS 시작
+    console.log('[VoiceState] briefing data loaded — starting TTS');
     await speakTTS(buildBriefTxt(d));
   } catch(e) {
     console.error(e);
@@ -854,9 +1005,35 @@ function fmtT(iso) {
 function resetSil() {
   clearTimeout(silTimer);
   silTimer = setTimeout(()=>{
-    if(appSt===ST.LISTENING)
-      deactivate('30초간 응답이 없어 대기 모드로 전환합니다. 현진님, 필요하시면 다시 불러주십시오.');
+    if (appSt !== ST.LISTENING) return;
+    // 마지막 음성 이후 SPEECH_GAP_MS(8초) 이내이면 아직 말하는 중 → 재시작
+    // (긴 문장 요청 시 짧은 숨소리·침묵에도 대기 모드로 전환되지 않도록 보호)
+    const sinceLastSpeech = Date.now() - lastSpeechTime;
+    if (sinceLastSpeech < SPEECH_GAP_MS) {
+      resetSil();
+      return;
+    }
+    // 60초 + 8초 갭 모두 충족 → STANDBY (대기중) 전환
+    goStandby();
   }, SILENCE_MS);
+}
+
+/** 침묵 타임아웃에 의한 대기중(STANDBY) 전환 — 명시적 종료(INACTIVE)와 구분 */
+async function goStandby() {
+  isHandling = false;
+  isBriefing = false;
+  ignoreSpeechInput = false;
+  console.log('[VoiceState] goStandby — briefing/ignore flags cleared');
+  clearTimeout(silTimer);
+  stopAudio();
+  typingStop = true;
+  document.getElementById('stopbtn').style.display = 'none';
+  clearLines();
+  document.getElementById('trUser').textContent = '';
+  await speakTTS('1분간 응답이 없어 대기 모드로 전환합니다. 현진님, 필요하시면 다시 불러주십시오.');
+  addMsg('s','─── 대기 모드 전환 ───');
+  setState(ST.STANDBY);  // ← STANDBY (대기중), INACTIVE 아님
+  setFt('대기 중 — "대현자야" 또는 박수로 즉시 재개 가능');
 }
 
 async function handleInput(text) {
@@ -915,10 +1092,17 @@ async function sendMsg(text) {
       buf+=dec.decode(value,{stream:true});
       const lines=buf.split('\n'); buf=lines.pop();
       for(const ln of lines){
-        if(ln.startsWith('data:')){const ch=ln.slice(5).trim();if(ch&&ch!=='[DONE]')full+=ch;}
+        if(ln.startsWith('data:')){
+          // SSE 포맷 "data:" 이후 공백 한 칸만 제거 (.trim() 금지 — 콘텐츠 앞 공백까지 삭제됨)
+          const raw=ln.slice(5); const ch=raw.startsWith(' ')?raw.slice(1):raw;
+          if(ch&&ch!=='[DONE]')full+=ch;
+        }
       }
     }
-    if(buf.startsWith('data:')){const ch=buf.slice(5).trim();if(ch&&ch!=='[DONE]')full+=ch;}
+    if(buf.startsWith('data:')){
+      const raw=buf.slice(5); const ch=raw.startsWith(' ')?raw.slice(1):raw;
+      if(ch&&ch!=='[DONE]')full+=ch;
+    }
     if(full){
       const clean=stripMd(full);
       addMsg('a',clean);
@@ -935,51 +1119,195 @@ async function sendMsg(text) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  CODE GENERATION (Claude Code CLI — 실제 터미널 창 실행)
+//  CODE GENERATION (Claude Code CLI — ProcessBuilder 직접 실행)
 // ═══════════════════════════════════════════════════════════
+
+// ── DEV MODAL 제어 ─────────────────────────────────────────
+
+/** 모달 열기 — 파라미터 없이 즉시 열기 */
+function openDevModal() {
+  document.getElementById('devModalCancelBtn').style.display = '';
+  document.getElementById('devModal').classList.add('show');
+}
+
+/** 모달 닫기 — 작업은 백그라운드에서 계속 진행 */
+function closeDevModal() {
+  document.getElementById('devModal').classList.remove('show');
+}
+
+/** 모달 재열기 (우측 패널 버튼 onclick) */
+function reopenDevModal() { openDevModal(); }
+
+/** 모달 초기화 — 새 작업 시작 시 호출 */
+function resetDevModal(command) {
+  document.getElementById('devModalJobId').textContent = '생성 중...';
+  document.getElementById('devModalStatus').textContent = 'PENDING';
+  document.getElementById('devModalStatus').style.color = '';
+  document.getElementById('devModalType').textContent = '분석 중...';
+  const pt = document.getElementById('devModalProjType');
+  if (pt) { pt.textContent = '-'; pt.style.color = ''; }
+  document.getElementById('devModalProject').textContent = '-';
+  document.getElementById('devModalCommand').textContent = command || '';
+  document.getElementById('devModalLog').innerHTML = '';
+}
+
+/** 로그 라인 추가 */
+function appendDevModalLog(msg, cls) {
+  const log = document.getElementById('devModalLog');
+  if (!log) return;
+  const el = document.createElement('div');
+  el.className = cls || 'dev-log-progress';
+  el.textContent = msg;
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+}
+
+/** 메타 그리드 업데이트 */
+function updateDevModalMeta({ jobId, status, type, projectType, project } = {}) {
+  if (jobId !== undefined) {
+    document.getElementById('devModalJobId').textContent = jobId ? '#' + jobId : '생성 중...';
+  }
+  if (status !== undefined) {
+    const el = document.getElementById('devModalStatus');
+    el.textContent = status;
+    el.style.color = status === 'RUNNING'    ? 'var(--orange)'
+                   : status === 'DONE'       ? 'var(--green)'
+                   : status === 'FAILED'     ? 'var(--red)'
+                   : status === 'CANCELLED'  ? 'var(--dim)'
+                   : '';
+  }
+  if (type !== undefined) {
+    document.getElementById('devModalType').textContent = type || '분석 중...';
+  }
+  if (projectType !== undefined) {
+    const el = document.getElementById('devModalProjType');
+    if (el) {
+      el.textContent = projectType || '-';
+      el.style.color = projectType === 'CHROME_EXTENSION' ? 'var(--cyan)'
+                     : projectType === 'SPRING_BOOT'      ? 'var(--green)'
+                     : projectType === 'GAME'             ? 'var(--gold)'
+                     : projectType === 'REACT_APP'        ? 'var(--cyan)'
+                     : 'var(--txt)';
+    }
+  }
+  if (project !== undefined) {
+    const el = document.getElementById('devModalProject');
+    el.textContent = project ? project.replace(/\\/g, '/') : '-';
+    el.title = project || '';
+  }
+}
+
+/** 로그 메시지에 맞는 CSS 클래스 반환 */
+function classForDevModalLog(msg) {
+  if (!msg) return 'dev-log-progress';
+  if (/error|실패|FAIL|✗/i.test(msg))                               return 'dev-log-error';
+  if (/warning|⚠/i.test(msg))                                       return 'dev-log-warn';
+  if (/✓|SUCCESS|완료|DONE|통과/i.test(msg))                        return 'dev-log-done';
+  if (/━━━|▶|RUNNING|git|gradle|Scaffold|trust|AssetPlan|에셋|진단|버전/i.test(msg)) return 'dev-log-sys';
+  if (/📝|✏️|👁|Write|Edit|Read|→\s*\S+\.\w+/i.test(msg))         return 'dev-log-file';
+  if (/📁|📄|icons\/|assets\/|\.png|\.js|\.css|\.json/i.test(msg)) return 'dev-log-file';
+  if (/⚙️|🔍|🔎|Bash|Glob|Grep/i.test(msg))                        return 'dev-log-progress';
+  return 'dev-log-progress';
+}
+
+/** 취소 — 모달·우측 패널 모두 호환 */
 async function cancelDevJob() {
   if (!activeJobId) return;
   try {
     await fetch('/api/dev/jobs/' + activeJobId, { method: 'DELETE' });
-    addCgLog('⚠ 취소 요청 전송됨', 'cgi-error');
+    appendDevModalLog('⚠ 취소 요청 전송됨', 'dev-log-warn');
+    document.getElementById('devModalCancelBtn').style.display = 'none';
   } catch(e) { console.error(e); }
 }
+async function cancelDevJobFromModal() { await cancelDevJob(); }
 
+/** 우측 패널 요약 업데이트 */
+function updateDevSummary(jobId, status, jobType, workspacePath) {
+  document.getElementById('sumJobId').textContent = '#' + jobId;
+  const statusEl = document.getElementById('sumStatus');
+  statusEl.textContent = status;
+  statusEl.className = 'dev-sum-val ' +
+    (status==='RUNNING' ? 'run' : status==='DONE'||status==='SUCCESS' ? 'ok' : status==='FAILED'||status==='ERROR' ? 'err' : '');
+  document.getElementById('sumType').textContent = jobType || '—';
+  if (workspacePath) {
+    const folder = workspacePath.replace(/\\/g,'/').split('/').pop();
+    document.getElementById('sumFolder').textContent = folder || workspacePath;
+    document.getElementById('sumFolder').title = workspacePath;
+    document.getElementById('sumFolderRow').style.display = '';
+  } else {
+    document.getElementById('sumFolderRow').style.display = 'none';
+  }
+}
+
+// ── 메인 핸들러 — 모달 즉시 열고 잡 제출 후 LISTENING 복귀 ──
 async function handleCodeGen(text) {
   setState(ST.PROCESSING); setFt('Dev Job 제출 중...'); showPdots(true); clearLines();
 
-  const cgsec     = document.getElementById('cgsec');
-  const devReport = document.getElementById('devReport');
-  const cglog     = document.getElementById('cglog');
-  const cancelBtn = document.getElementById('cgCancelBtn');
+  // ① 모달 즉시 열기 (API 호출 전)
+  resetDevModal(text);
+  openDevModal();
+  appendDevModalLog('▶ 개발 요청 감지', 'dev-log-sys');
+  appendDevModalLog('▶ Claude Code CLI 작업 준비 중...', 'dev-log-progress');
 
-  devReport.innerHTML = '';
-  cglog.innerHTML = '';
-  cgsec.style.display = '';
-  cancelBtn.style.display = '';
-
-  await speakTTS('네, 현진님. 터미널을 열고 Claude Code로 개발을 시작합니다. 잠시 기다려 주십시오.');
+  // ② TTS — await 없이 비동기 실행 (모달 표시 후 즉시 API 호출 진행)
+  const intro = '네, 현진님. Claude Code CLI를 통해 작업하겠습니다.';
+  addMsg('a', intro); setLines(intro);
+  speakTTS(intro); // NO await
 
   try {
-    // 1) 잡 제출 — 즉시 jobId 반환
+    // ③ 잡 제출 — 즉시 jobId 반환
     const submitRes = await fetch('/api/dev/jobs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ command: text })
     });
     if (!submitRes.ok) throw new Error('HTTP ' + submitRes.status);
-    const { jobId } = await submitRes.json();
-    activeJobId = jobId;
+    const res = await submitRes.json();
+    const { jobId, jobType, projectType, workspacePath } = res;
+    activeJobId           = jobId;
+    _activeJobType        = jobType    || 'MODIFY_JARVIS';
+    _activeProjectType    = projectType || 'UNKNOWN';
+    _activeWorkspacePath  = workspacePath || '';
 
-    addCgLog('▶ Job #' + jobId + ' 시작됨', 'cgi-start');
     showPdots(false);
-    setLines('Claude Code 터미널 실행 중...');
+    updateDevModalMeta({ jobId, status: 'RUNNING', type: _activeJobType,
+                         projectType: _activeProjectType, project: _activeWorkspacePath });
+    updateDevSummary(jobId, 'RUNNING', _activeJobType, _activeWorkspacePath);
+    appendDevModalLog('▶ Job #' + jobId + ' 생성됨 (' + _activeJobType + ')', 'dev-log-sys');
+    addMsg('a', '개발 작업 #' + jobId + '이 시작됐습니다. 모달에서 실시간 로그를 확인하세요.');
 
-    // 2) SSE 스트림 연결
+    // ④ SSE 스트리밍은 백그라운드로 (await 없음 → 즉시 LISTENING 복귀)
+    _streamDevJob(jobId);
+
+  } catch(e) {
+    console.error(e);
+    showPdots(false);
+    activeJobId = null;
+    appendDevModalLog('✗ 잡 제출 실패: ' + e.message, 'dev-log-error');
+    updateDevModalMeta({ status: 'FAILED' });
+    await speakTTS('개발 작업 제출 중 오류가 발생하였습니다.');
+  }
+
+  // 즉시 LISTENING 복귀 — Claude Code는 백그라운드에서 계속 실행
+  setState(ST.LISTENING);
+  setFt('세션 활성 — 말씀하세요 (Dev 백그라운드 실행 중)');
+  resetSil();
+  startRecog();
+}
+
+// ── 백그라운드 SSE 스트리밍 (handleInput 블로킹 없음) ──────
+async function _streamDevJob(jobId) {
+  const devReport = document.getElementById('devReport');
+  const launchSec = document.getElementById('devLaunchSec');
+  try {
     const streamRes = await fetch('/api/dev/jobs/' + jobId + '/stream', {
       headers: { 'Accept': 'text/event-stream' }
     });
-    if (!streamRes.ok) throw new Error('Stream HTTP ' + streamRes.status);
+    if (!streamRes.ok) {
+      appendDevModalLog('✗ Stream HTTP ' + streamRes.status, 'dev-log-error');
+      updateDevModalMeta({ status: 'FAILED' });
+      return;
+    }
 
     const reader = streamRes.body.getReader(), dec = new TextDecoder();
     let buf = '', summary = '', fileList = [], buildOk = false;
@@ -995,70 +1323,132 @@ async function handleCodeGen(text) {
         try {
           const evt = JSON.parse(raw);
           if (evt.type === 'log' && evt.data) {
-            addCgLog(evt.data, classForLog(evt.data));
-            setLines(evt.data.slice(0, 55));
+            appendDevModalLog(evt.data, classForDevModalLog(evt.data));
+          } else if (evt.type === 'jobType') {
+            _activeJobType = evt.data;
+            updateDevModalMeta({ type: evt.data });
+            updateDevSummary(activeJobId, 'RUNNING', evt.data, _activeWorkspacePath);
+          } else if (evt.type === 'projectType') {
+            _activeProjectType = evt.data;
+            updateDevModalMeta({ projectType: evt.data });
+          } else if (evt.type === 'workspace') {
+            _activeWorkspacePath = evt.data;
+            updateDevModalMeta({ project: evt.data });
+            updateDevSummary(activeJobId, 'RUNNING', _activeJobType, evt.data);
           } else if (evt.type === 'status') {
-            addCgLog('[ ' + evt.data + ' ]', 'cgi-start');
+            updateDevModalMeta({ status: evt.data });
+            appendDevModalLog('[ STATUS: ' + evt.data + ' ]', 'dev-log-sys');
+            updateDevSummary(activeJobId || 0, evt.data, _activeJobType, _activeWorkspacePath);
           } else if (evt.type === 'done') {
             const doneData = JSON.parse(evt.data);
             summary  = doneData.summary      || '';
             fileList = doneData.changedFiles  || [];
             buildOk  = doneData.buildSuccess === true;
+            const jType = doneData.jobType    || _activeJobType || 'MODIFY_JARVIS';
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            cancelBtn.style.display = 'none';
-            renderDevReport(fileList, buildOk, elapsed, devReport, cgsec, doneData.diffStat || '');
+            document.getElementById('devModalCancelBtn').style.display = 'none';
+            appendDevModalLog('', 'dev-log-sys');
+
+            // ── 성공/실패 판정 — 서버 판정을 신뢰 (SUCCESS_WITH_WARNINGS 포함) ──
+            const serverStatus = doneData.status || '';
+            const projType     = doneData.projectType || _activeProjectType || 'UNKNOWN';
+            const nonReadmeFiles = fileList.filter(f => f.toLowerCase() !== 'readme.md');
+
+            // 서버가 DONE 으로 판정했으면 성공 (exitCode != 0 이어도 파일 있으면 DONE)
+            let actualSuccess = !doneData.cancelled && serverStatus === 'DONE';
+
+            const finalStatus = doneData.cancelled ? 'CANCELLED'
+                               : (actualSuccess ? 'DONE' : 'FAILED');
+
+            // 판정 결과 로그
+            if (actualSuccess && fileList.length > 0 && doneData.actualSuccess === false) {
+              // SUCCESS_WITH_WARNINGS: 파일은 있지만 exit!=0
+              appendDevModalLog('▶ 최종 판정: SUCCESS_WITH_WARNINGS', 'dev-log-done');
+            } else {
+              appendDevModalLog('━━━ ' + (actualSuccess ? '완료' : '실패') + ' (' + elapsed + 's) ━━━',
+                                actualSuccess ? 'dev-log-done' : 'dev-log-error');
+            }
+            if (doneData.diffStat) appendDevModalLog(doneData.diffStat, 'dev-log-file');
+            fileList.forEach(f => appendDevModalLog('  ✓ ' + f, 'dev-log-file'));
+            if (jType !== 'NEW_PROJECT') {
+              appendDevModalLog(buildOk ? '✓ BUILD SUCCESS' : '✗ BUILD FAILED',
+                                buildOk ? 'dev-log-done' : 'dev-log-error');
+            }
+            if (!actualSuccess && jType === 'NEW_PROJECT') {
+              if (nonReadmeFiles.length === 0) {
+                appendDevModalLog('✗ 결과 파일 없음 — Claude가 파일을 생성하지 않았습니다.', 'dev-log-error');
+              } else {
+                appendDevModalLog('✗ 필수 파일 부족', 'dev-log-error');
+              }
+            }
+
+            const wsPath = doneData.workspacePath || _activeWorkspacePath;
+            updateDevModalMeta({ status: finalStatus, type: jType, projectType: projType, project: wsPath });
+            updateDevSummary(activeJobId || 0, finalStatus, jType, wsPath);
+            renderDevReport(fileList, buildOk, elapsed, devReport, launchSec,
+                            doneData.diffStat || '', jType, wsPath);
+
+            const displaySummary = stripMd(summary || (actualSuccess ? '코드 생성 완료' : '코드 생성 실패'));
+            addMsg('a', '[Dev ' + (actualSuccess ? '완료' : '실패') + '] ' + displaySummary);
+
+            // ── TTS 완료/실패 알림 ────────────────────────────────────
+            const ttsMsg = actualSuccess
+              ? 'Claude Code 작업 완료. 새 프로젝트가 생성되었습니다.'
+              : 'Claude Code 실행에 실패했습니다. 파일이 정상 생성되지 않았습니다. Dev Modal 로그를 확인해 주세요.';
+            if (jType === 'NEW_PROJECT') {
+              // 현재 LISTENING 상태이면 즉시 TTS, 아니면 잠시 후
+              if (appSt === ST.LISTENING || appSt === ST.STANDBY || appSt === ST.INACTIVE) {
+                speakTTS(ttsMsg).catch(console.error);
+              }
+            } else {
+              const modifyMsg = actualSuccess
+                ? (summary || '현진님, 요청하신 기능 개발이 완료되었습니다.')
+                : 'Claude Code 실행에 실패했습니다. Dev Modal 로그를 확인해 주세요.';
+              if (appSt === ST.LISTENING || appSt === ST.STANDBY || appSt === ST.INACTIVE) {
+                speakTTS(stripMd(modifyMsg)).catch(console.error);
+              }
+            }
           }
         } catch(_) {}
       }
     }
-
-    cancelBtn.style.display = 'none';
-    activeJobId = null;
-    const reply = stripMd(summary || '코드 생성이 완료되었습니다.');
-    addMsg('a', reply); setState(ST.SPEAKING); await speakTTS(reply);
   } catch(e) {
-    console.error(e);
-    showPdots(false);
-    cancelBtn.style.display = 'none';
+    console.error('[_streamDevJob]', e);
+    appendDevModalLog('✗ 스트림 오류: ' + e.message, 'dev-log-error');
+    updateDevModalMeta({ status: 'FAILED' });
+  } finally {
     activeJobId = null;
-    const err = '코드 생성 중 오류가 발생하였습니다. 다시 시도해 주십시오.';
-    addMsg('a', err); setState(ST.SPEAKING); await speakTTS(err);
   }
-  setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil(); startRecog();
 }
 
-function addCgLog(msg, cls) {
-  const log = document.getElementById('cglog');
-  if (!log) return;
-  const el = document.createElement('div');
-  el.className = 'cgi ' + (cls || '');
-  el.textContent = msg;
-  log.appendChild(el);
-  log.scrollTop = log.scrollHeight;
+// Chrome Extension 작업 여부 판별 (workspace 경로 또는 요약 텍스트 기반)
+function isChromExtensionJob(workspacePath, summary) {
+  const combined = ((workspacePath || '') + ' ' + (summary || '')).toLowerCase();
+  return combined.includes('chrome') || combined.includes('extension') || combined.includes('manifest');
 }
 
-function classForLog(msg) {
-  if (/error|실패|FAIL/i.test(msg)) return 'cgi-error';
-  if (/✓|SUCCESS|완료|DONE/i.test(msg)) return 'cgi-done';
-  if (/━━━|시작|RUNNING|git|gradle/i.test(msg)) return 'cgi-start';
-  return 'cgi-progress';
-}
+// 하위호환 유지용 no-op
+function addCgLog(msg, cls) {}
+function classForLog(msg) { return classForDevModalLog(msg); }
 
-// 우측 패널 대시보드 리포트 렌더링
-function renderDevReport(files, buildOk, elapsed, container, section, diffStat) {
-  let h = '';
-  if (diffStat) {
-    h += '<div class="rpt-label">변경 통계</div>';
-    h += '<div class="rpt-file" style="white-space:pre-wrap">' + esc(diffStat) + '</div>';
-  }
+// 우측 패널 요약 리포트 렌더링
+function renderDevReport(files, buildOk, elapsed, container, section, diffStat, jobType, workspacePath) {
+  const isNew = (jobType === 'NEW_PROJECT');
+  let h = '<div class="rpt-label">' + (isNew ? '생성된 파일' : '변경된 파일') + ' (' + files.length + ')</div>';
   if (files.length > 0) {
-    h += '<div class="rpt-label">처리된 파일 (' + files.length + ')</div>';
-    files.forEach(f => { h += '<div class="rpt-file">✓ ' + esc(f) + '</div>'; });
+    const show = files.slice(0, 6);
+    show.forEach(f => { h += '<div class="rpt-file">✓ ' + esc(f) + '</div>'; });
+    if (files.length > 6) h += '<div class="rpt-file" style="color:var(--dim)">... 외 ' + (files.length-6) + '개</div>';
   } else {
-    h += '<div class="rpt-label">파일 변경 없음</div>';
+    h += '<div class="rpt-file" style="color:var(--dim)">없음</div>';
   }
-  h += '<div class="' + (buildOk ? 'rpt-build-ok' : 'rpt-build-fail') + '">'
-     + (buildOk ? '✓ BUILD SUCCESS' : '✗ BUILD FAILED') + '</div>';
+  if (!isNew) {
+    h += '<div class="' + (buildOk ? 'rpt-build-ok' : 'rpt-build-fail') + '">'
+       + (buildOk ? '✓ BUILD SUCCESS' : '✗ BUILD FAILED') + '</div>';
+  }
+  if (isNew && workspacePath) {
+    h += '<div class="rpt-elapsed">위치: ' + esc(workspacePath.replace(/\\/g,'/').split('/').pop()) + '</div>';
+  }
   h += '<div class="rpt-elapsed">소요 시간 ' + elapsed + 's</div>';
   container.innerHTML = h;
   section.style.display = '';
@@ -1296,7 +1686,7 @@ function showPdots(show) {
   document.getElementById('jwindow').style.display = show?'none':'';
 }
 
-const STLBL={init:'초기화',standby:'대기 중',activating:'활성화 중',
+const STLBL={init:'초기화',inactive:'비활성화',standby:'대기 중',activating:'활성화 중',
   briefing:'브리핑 중',listening:'청취 중',processing:'처리 중',speaking:'응답 중'};
 
 function setState(s) {
@@ -1320,14 +1710,55 @@ function addMsg(role, text) {
 // ═══════════════════════════════════════════════════════════
 //  CARDS — Todo / Memo
 // ═══════════════════════════════════════════════════════════
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+
 async function loadCards() {
   try {
     const [todos, memos] = await Promise.all([
       fetch('/api/todos').then(r=>r.ok?r.json():[]),
       fetch('/api/memos').then(r=>r.ok?r.json():[]),
     ]);
-    renderCards(todos, memos);
+    // 오늘 날짜와 일치하거나 마감일 미설정 항목만 표시
+    const today = todayStr();
+    const todayTodos = todos.filter(t => !t.dueDate || t.dueDate === today);
+    renderCards(todayTodos, memos);
+    updateBriefingTodos(todayTodos);
   } catch(e) { console.warn('카드 로드 실패:', e.message); }
+}
+
+/** 우측 패널 TODAY'S BRIEFING 섹션의 할 일 목록만 즉시 갱신 */
+function updateBriefingTodos(todos) {
+  const bsec = document.getElementById('bsec');
+  if (!bsec || bsec.style.display === 'none') return;
+  document.getElementById('btodos').innerHTML =
+    `<div class="bl">할 일 (${todos.length})</div>` +
+    (todos.length
+      ? todos.map(t => `<div class="bi">⬡ ${esc(t.title)}</div>`).join('')
+      : '<div class="bn">없음</div>');
+  console.log('[Todo] briefing section UI refreshed —', todos.length, '건');
+}
+
+/**
+ * 할 일 추가·수정·삭제·완료 처리 후 반드시 호출하는 공통 갱신 함수.
+ * 아래 세 영역을 모두 최신 서버 데이터 기준으로 동기화한다.
+ *   1) 상단 카드 섹션 (todo + memo 카드 그리드)
+ *   2) 우측 TODAY'S BRIEFING 섹션 (할 일 카운트 + 목록)
+ *   3) 다음 활성화 브리핑에서 읽을 todayTodos 데이터
+ */
+async function refreshTodayTodoState() {
+  try {
+    const today = todayStr();
+    const [todos, memos] = await Promise.all([
+      fetch('/api/todos').then(r => r.ok ? r.json() : []),
+      fetch('/api/memos').then(r => r.ok ? r.json() : []),
+    ]);
+    // dueDate가 오늘이거나 미설정인 항목만 카드로 표시
+    const todayTodos = todos.filter(t => !t.dueDate || t.dueDate === today);
+    renderCards(todayTodos, memos);
+    updateBriefingTodos(todayTodos);
+  } catch(e) {
+    console.warn('[Todo] refreshTodayTodoState 실패:', e.message);
+  }
 }
 
 function renderCards(todos, memos) {
@@ -1338,8 +1769,8 @@ function renderCards(todos, memos) {
 
   const addBtn = row.querySelector('.cards-add-btn');
 
-  // Todo 카드
-  [...todos].sort((a,b)=>a.done-b.done).forEach(t => {
+  // Todo 카드 — 미완료 먼저, 동일 상태 내에서는 등록 순 (오래된 것 왼쪽, 새 것 오른쪽)
+  [...todos].sort((a,b) => a.done - b.done).forEach(t => {
     const el = document.createElement('div');
     el.className = 'card card-todo' + (t.done?' card-done':'');
     el.dataset.id = t.id; el.dataset.type = 'todo';
@@ -1370,21 +1801,37 @@ function renderCards(todos, memos) {
 }
 
 async function toggleTodo(id, el) {
+  // Optimistic update: 즉각적인 시각적 피드백
+  const wasDone = el.classList.contains('card-done');
+  el.classList.toggle('card-done');
+  const sub = el.querySelector('.card-sub');
+  sub.textContent = el.classList.contains('card-done') ? '✓ 완료' : '미완료';
+
   try {
     await fetch('/api/todos/'+id+'/toggle', {method:'PATCH'});
-    el.classList.toggle('card-done');
-    const sub = el.querySelector('.card-sub');
-    if (el.classList.contains('card-done')) sub.textContent = '✓ 완료';
-    else sub.textContent = '미완료';
-  } catch(e) { console.warn(e); }
+    // 서버 확인 후 전체 UI 동기화 (브리핑 섹션 포함)
+    await refreshTodayTodoState();
+  } catch(e) {
+    // 실패 시 Optimistic update 롤백
+    if (wasDone) el.classList.add('card-done');
+    else el.classList.remove('card-done');
+    sub.textContent = wasDone ? '✓ 완료' : '미완료';
+    console.warn('[Todo] toggle 실패 — 롤백:', e);
+  }
 }
 
 async function deleteCard(e, type, id) {
   e.stopPropagation();
+  // Optimistic delete: 즉시 카드 숨기기
+  const cardEl = e.target.closest('.card');
+  if (cardEl) cardEl.style.display = 'none';
   try {
     await fetch('/api/'+(type==='todo'?'todos':'memos')+'/'+id, {method:'DELETE'});
-    loadCards();
-  } catch(err) { console.warn(err); }
+    await refreshTodayTodoState();
+  } catch(err) {
+    if (cardEl) cardEl.style.display = '';  // 실패 시 복원
+    console.warn('[Todo] deleteCard 실패:', err);
+  }
 }
 
 // 직접 등록 (음성 명령)
@@ -1396,7 +1843,8 @@ async function handleAddTodo(title) {
       body: JSON.stringify({title})
     });
     if (!res.ok) throw new Error('HTTP '+res.status);
-    await loadCards();
+    await refreshTodayTodoState();
+    requestAnimationFrame(() => { const s=document.getElementById('cardsSection'); s.scrollLeft=s.scrollWidth; });
     const reply = `네, 현진님. "${title}" 할일을 등록하였습니다.`;
     addMsg('a', reply); showPdots(false);
     setState(ST.SPEAKING); await speakTTS(reply);
@@ -1415,7 +1863,8 @@ async function handleAddMemo(title) {
       body: JSON.stringify({title, content:''})
     });
     if (!res.ok) throw new Error('HTTP '+res.status);
-    await loadCards();
+    await refreshTodayTodoState();
+    requestAnimationFrame(() => { const s=document.getElementById('cardsSection'); s.scrollLeft=s.scrollWidth; });
     const reply = `네, 현진님. "${title}" 메모를 저장하였습니다.`;
     addMsg('a', reply); showPdots(false);
     setState(ST.SPEAKING); await speakTTS(reply);
@@ -1424,6 +1873,33 @@ async function handleAddMemo(title) {
     await speakTTS('메모 저장 중 오류가 발생했습니다.');
   }
   setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil(); startRecog();
+}
+
+/** Optimistic add: 서버 응답 전 즉시 임시 카드 삽입 → 맨 오른쪽 (+버튼 앞) */
+function insertOptimisticCard(type, title, due, content) {
+  const row = document.getElementById('cardsRow');
+  const section = document.getElementById('cardsSection');
+  const addBtn = row.querySelector('.cards-add-btn');
+  const el = document.createElement('div');
+  if (type === 'todo') {
+    el.className = 'card card-todo';
+    el.innerHTML = `
+      <div class="card-type">◆ TODO</div>
+      <div class="card-title">${esc(title)}</div>
+      <div class="card-sub">${due ? '📅 '+due : '미완료'}</div>`;
+  } else {
+    el.className = 'card card-memo';
+    el.innerHTML = `
+      <div class="card-type">◈ MEMO</div>
+      <div class="card-title">${esc(title)}</div>
+      <div class="card-sub">${esc((content||'').slice(0,40))||'내용 없음'}</div>`;
+  }
+  el.style.opacity = '0.55';
+  el.dataset.optimistic = 'true';
+  row.insertBefore(el, addBtn);  // + 버튼 바로 앞 (맨 오른쪽)
+  section.style.display = 'block';
+  requestAnimationFrame(() => { section.scrollLeft = section.scrollWidth; });
+  return el;
 }
 
 // ── Add Modal ─────────────────────────────────────────────
@@ -1447,17 +1923,32 @@ async function submitAddModal() {
   const content = document.getElementById('addContent').value.trim();
   const due     = document.getElementById('addDue').value;
   if (!title) { document.getElementById('addTitle').focus(); return; }
+
+  closeAddModal();
+  // Optimistic: 모달 닫자마자 즉시 임시 카드 표시
+  const tempCard = insertOptimisticCard(type, title, due, content);
+
   try {
     if (type === 'todo') {
       const body = {title};
       if (due) body.dueDate = due;
-      await fetch('/api/todos', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+      const res = await fetch('/api/todos', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+      if (!res.ok) throw new Error('HTTP ' + res.status);
     } else {
-      await fetch('/api/memos', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title, content})});
+      const res = await fetch('/api/memos', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title, content})});
+      if (!res.ok) throw new Error('HTTP ' + res.status);
     }
-    closeAddModal();
-    await loadCards();
-  } catch(e) { alert('등록 실패: ' + e.message); }
+    // 서버 저장 완료 → 임시 카드 제거 후 실제 데이터로 갱신
+    tempCard.remove();
+    await refreshTodayTodoState();
+    requestAnimationFrame(() => {
+      const sec = document.getElementById('cardsSection');
+      sec.scrollLeft = sec.scrollWidth;
+    });
+  } catch(e) {
+    tempCard.remove();
+    alert('등록 실패: ' + e.message);
+  }
 }
 // 모달 외부 클릭 시 닫기
 document.addEventListener('click', e => {
