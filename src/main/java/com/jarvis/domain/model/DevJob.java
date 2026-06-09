@@ -73,7 +73,7 @@ public class DevJob {
     private LocalDateTime completedAt;
 
     public enum JobStatus {
-        PENDING, RUNNING, DONE, FAILED, CANCELLED
+        QUEUED, RUNNING, DONE, FAILED, CANCELLED
     }
 
     // ── 상태 전이 메서드 ──────────────────────────────────────
