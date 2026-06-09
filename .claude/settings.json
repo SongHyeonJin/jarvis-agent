@@ -4,7 +4,34 @@
       "PowerShell(Get-ChildItem -Path \"d:\\\\jarvis-agent\\\\src\\\\main\\\\java\\\\com\\\\jarvis\" -Recurse -File | Group-Object { $_.Directory.Name } | Select-Object Name, Count | Sort-Object Count -Descending)",
       "PowerShell(Get-ChildItem d:\\\\jarvis-agent -Name | Where-Object { $_ -match 'gradle' })",
       "PowerShell(Start-Process -FilePath $gradle -ArgumentList \"bootRun\", \"--no-daemon\", \"--project-dir\", \"d:\\\\jarvis-agent\" -WindowStyle Hidden)",
-      "PowerShell($gradle = \"C:\\\\Users\\\\Song\\\\.gradle\\\\wrapper\\\\dists\\\\gradle-9.2.0-bin\\\\11i5gvueggl8a5cioxuftxrik\\\\gradle-9.2.0\\\\bin\\\\gradle.bat\")"
+      "PowerShell($gradle = \"C:\\\\Users\\\\Song\\\\.gradle\\\\wrapper\\\\dists\\\\gradle-9.2.0-bin\\\\11i5gvueggl8a5cioxuftxrik\\\\gradle-9.2.0\\\\bin\\\\gradle.bat\")",
+      "PowerShell(Get-Process java -ErrorAction SilentlyContinue)",
+      "Bash(gradle --version)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(gh pr create --base develop --head feature/cleanup-legacy --title 'Remove: 레거시 컨트롤러·서비스·도메인·템플릿 삭제' --body ' *)",
+      "PowerShell(winget install --id GitHub.cli 2>&1)",
+      "Bash(gh auth *)",
+      "Bash(git pull *)",
+      "Skill(schedule)",
+      "Skill(schedule:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NonInteractive -NoProfile -File \"d:\\jarvis-agent\\.claude\\hooks\\check-arch.ps1\""
+          }
+        ]
+      }
     ]
   }
 }
