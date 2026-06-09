@@ -1,31 +1,46 @@
-# Claude Code Project Rules - Jarvis Agent
+# Jarvis Agent
 
-## 1. Tech Stack & Environment
-- **Backend:** Java 17+ (Spring Boot 3.x)
-- **Build Tool:** Gradle (Kotlin DSL - `build.gradle.kts`)
-- **Key Libraries:** Spring AI, Spring Web, Thymeleaf, Lombok
-- **Architecture:** Layered Architecture (Controller -> Service -> Repository -> Domain)
+**Stack:** Spring Boot 3.x · Java 21 · Gradle Kotlin DSL · Spring AI · H2  
+**Server:** `localhost:8081` · `gradlew.bat bootRun`
 
-## 2. Code Style & Patterns
-- All Java class names must follow PascalCase, and variables/methods must follow camelCase.
-- Use Lombok annotations (`@RequiredArgsConstructor`, `@Getter`, `@Slf4j`) to reduce boilerplate code.
-- Ensure all business logic resides in the Service layer, not in Controllers.
-- Handle exceptions globally using `@RestControllerAdvice` or `@ControllerAdvice`.
-- Write concise, self-documenting code with minimal comments unless the logic is highly complex.
+## 절대 규칙 (항상 적용)
+- UI/응답 메시지는 한국어. 코드·로그는 영어.
+- 비즈니스 로직은 Service 계층에만. Controller는 위임만.
+- Lombok 필수 (`@RequiredArgsConstructor`, `@Slf4j`, `@Getter`).
+- 예외 처리는 `@RestControllerAdvice`에서 전역 처리.
 
-## 3. Core Features Hierarchy (Priority)
-1. **Priority 1 (Main):** Developer Assistant (Code review, generation, and parsing logic).
-2. **Priority 2 (Essential):** Personal Assistant (Task management, notes, scheduling with db persistence).
-3. **Priority 3 (Optional):** Conversational chatbot & Document RAG summaries.
+## 패키지 구조
+```
+adapter/in/web/     → Controllers
+application/        → Services (business logic)
+domain/port/in/     → UseCase interfaces
+domain/port/out/    → Repository / AI port interfaces
+domain/model/       → Domain entities
+adapter/out/        → DB · AI implementations
+tool/               → Spring AI @Tool classes
+```
 
-## 4. Multi-Model Routing Strategy
-- Use **Claude models** for high-complexity code tasks (Priority 1).
-- Use **GPT models (OpenAI)** for general tasks, formatting, or lightweight summaries (Priority 2, 3).
-- Abstract AI service calls using Java Interfaces to allow hot-swapping models via `application.yml`.
+## AI 라우팅
+- **Claude Sonnet** → `AutoDevService`, `ClaudeCliExecutor`, `DevJobService` (복잡한 코드 작업)
+- **GPT-4o-mini** → `ChatService`, `BriefingService` (일반 대화·요약)
+- AI 직접 호출 금지 — 반드시 `AiModelPort` 인터페이스를 통해 라우팅.
 
-## 5. UI/UX Rules
-- Frontend views should be fully self-contained inside `src/main/resources/templates` or `static` using Thymeleaf and vanilla HTML/JS/TailwindCSS.
+## 커스텀 커맨드
+- `/new-feature <Name>` — 전 계층 스캐폴딩 (Domain → Port → Service → Controller)
+- `/add-tool <Name>` — Spring AI @Tool 추가
+- `/run-server` — 서버 상태 확인 및 기동
 
-## 6. Language Preference
-- **Code & Comments:** English for code entities/logs, but user-facing UI and response messages must be in Korean (한국어).
-- **Communication:** Always reply to the user in Korean (한국어).
+## 상세 규칙
+- 아키텍처 경계 → `.claude/rules/architecture.md`
+- 코딩 스타일 → `.claude/rules/code-style.md`
+- AI 모델 라우팅 → `.claude/rules/ai-routing.md`
+
+## .md 자기 유지 규칙 (구조 변경 시 반드시 같이 수정)
+
+| 변경 내용 | 업데이트할 파일 |
+|---|---|
+| 새 패키지 추가 | `CLAUDE.md` 패키지맵 + `rules/architecture.md` 레이어 표 |
+| 새 AI 모델 추가 | `CLAUDE.md` AI 라우팅 + `rules/ai-routing.md` 모델 표 |
+| 새 파일 명명 패턴 (`*Handler*` 등) | `rules/ai-routing.md` globs |
+| 새 커맨드 추가 | `CLAUDE.md` 커맨드 목록 |
+| 아키텍처 레이어 추가/변경 | `rules/architecture.md` 레이어 경계 표 + `commands/new-feature.md` 생성 순서 |
