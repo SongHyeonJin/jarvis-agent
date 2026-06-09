@@ -71,7 +71,7 @@ public class DevJobService {
         DevJob job = DevJob.builder()
                 .command(command)
                 .prompt(prompt)
-                .status(DevJob.JobStatus.PENDING)
+                .status(DevJob.JobStatus.QUEUED)
                 .jobType(wsInfo.jobType().name())
                 .projectType(wsInfo.projectType().name())
                 .workspacePath(wsInfo.projectRoot().toString())
@@ -131,6 +131,46 @@ public class DevJobService {
     public Optional<DevJob> getJob(Long jobId) { return jobRepo.findById(jobId); }
     public List<DevJob>     listJobs()          { return jobRepo.findRecent();    }
 
+    /**
+     * 기존 외부 워크스페이스를 수정하는 잡을 제출한다.
+     * WorkspaceResolver 패턴 매칭을 우회하고 지정 경로를 직접 사용한다.
+     */
+    public DevJob submitModificationJob(String instruction, String workspacePath, String projectTypeName) {
+        ProjectType pt     = safeProjectType(projectTypeName);
+        String      prompt = buildModifyExternalPrompt(instruction, workspacePath, pt);
+        String      wsKey  = workspacePath;
+
+        DevJob job = DevJob.builder()
+                .command(instruction)
+                .prompt(prompt)
+                .status(DevJob.JobStatus.QUEUED)
+                .jobType(JobType.MODIFY_EXTERNAL.name())
+                .projectType(pt.name())
+                .workspacePath(wsKey)
+                .createdAt(LocalDateTime.now())
+                .build();
+        job = jobRepo.save(job);
+        Long jobId = job.getId();
+
+        Sinks.Many<String> sink   = Sinks.many().replay().limit(500);
+        AtomicBoolean      cancel = new AtomicBoolean(false);
+        sinks.put(jobId, sink);
+        cancels.put(jobId, cancel);
+
+        final Long        fId  = jobId;
+        final ProjectType fPt  = pt;
+        emit(sink, "status", "QUEUED");
+        Schedulers.boundedElastic().schedule(() ->
+                runJob(fId, wsKey, JobType.MODIFY_EXTERNAL, fPt, instruction, sink, cancel));
+        log.info("[DevJobService] ModificationJob #{} 제출: path={} type={}", jobId, wsKey, pt);
+        return job;
+    }
+
+    private ProjectType safeProjectType(String name) {
+        if (name == null || name.isBlank()) return ProjectType.UNKNOWN;
+        try { return ProjectType.valueOf(name); } catch (Exception e) { return ProjectType.UNKNOWN; }
+    }
+
     // ─────────────────────────────────────────────────────────
     //  비동기 실행 루프
     // ─────────────────────────────────────────────────────────
@@ -154,6 +194,18 @@ public class DevJobService {
         emit(sink, "log", "▶ 작업 유형: " + jobType.name());
         emit(sink, "log", "▶ 프로젝트 유형: " + projectType.name());
         emit(sink, "log", "▶ 작업 위치: " + workPath);
+
+        // ── MODIFY_EXTERNAL 전처리 (기존 프로젝트 수정) ──────────
+        if (jobType == JobType.MODIFY_EXTERNAL) {
+            emit(sink, "log", "▶ 외부 프로젝트 수정 모드");
+            emit(sink, "log", "▶ 작업 위치: " + workPath);
+            if (!Files.exists(projectPath)) {
+                String msg = "ERROR: 프로젝트 폴더 없음: " + workPath;
+                emit(sink, "log", msg);
+                failJob(job, jobId, msg, sink);
+                return;
+            }
+        }
 
         // ── NEW_PROJECT 전처리 ────────────────────────────────
         if (jobType == JobType.NEW_PROJECT) {
@@ -250,6 +302,12 @@ public class DevJobService {
 
             emit(sink, "log", "\n━━━ Gradle 빌드 검증 중... ━━━");
             buildOk = runGradleBuild(sink);
+
+        } else if (jobType == JobType.MODIFY_EXTERNAL) {
+            // 외부 프로젝트 수정 — Files.walk 로 변경 파일 확인
+            emit(sink, "log", "\n━━━ 수정된 파일 확인 중... ━━━");
+            changedFiles = listCreatedFiles(workPath, sink);
+            buildOk = true;
 
         } else {
             // NEW_PROJECT → Files.walk 기반 파일 목록
@@ -362,7 +420,14 @@ public class DevJobService {
         if (result.cancelled() || result.timedOut()) return false;
 
         if (jobType == JobType.MODIFY_JARVIS) {
+            boolean hasChanges = !changedFiles.isEmpty();
+            if (hasChanges && buildOk) return true;
             return result.exitCode() == 0 && buildOk;
+        }
+
+        // MODIFY_EXTERNAL: 파일이 존재하면 성공 (재작성이 아닌 편집이므로 파일 목록은 의미 없음)
+        if (jobType == JobType.MODIFY_EXTERNAL) {
+            return !result.timedOut() && !result.cancelled();
         }
 
         // NEW_PROJECT: 파일 기반 판정 (exitCode 무관)
@@ -741,6 +806,41 @@ public class DevJobService {
 
         sb.append("\n지금 즉시 Write 도구로 파일을 직접 작성하세요.");
         return sb.toString();
+    }
+
+    private String buildModifyExternalPrompt(String instruction, String workspacePath, ProjectType projectType) {
+        // 현재 파일 목록 수집 (Claude가 무엇을 수정해야 하는지 알 수 있도록)
+        String fileList;
+        try {
+            fileList = java.nio.file.Files.walk(java.nio.file.Paths.get(workspacePath))
+                    .filter(java.nio.file.Files::isRegularFile)
+                    .filter(p -> !p.toString().replace('\\', '/').contains("/.git/"))
+                    .filter(p -> !p.toString().replace('\\', '/').contains("/node_modules/"))
+                    .filter(p -> !p.toString().replace('\\', '/').contains("/preview.log"))
+                    .map(p -> "  - " + java.nio.file.Paths.get(workspacePath).relativize(p).toString().replace('\\', '/'))
+                    .sorted()
+                    .collect(java.util.stream.Collectors.joining("\n"));
+        } catch (Exception e) {
+            fileList = "  (파일 목록 조회 실패)";
+        }
+
+        return String.format("""
+                이 프로젝트의 파일을 수정해주세요.
+
+                수정 요청: %s
+                작업 디렉토리: %s
+                프로젝트 유형: %s
+
+                현재 파일 구조:
+                %s
+
+                수정 규칙:
+                1. 반드시 수정이 필요한 파일을 Read 도구로 먼저 읽으세요.
+                2. Edit 도구로 변경이 필요한 부분만 최소한으로 수정하세요.
+                3. 파일 전체를 다시 쓰지 마세요 — 변경 부분만 편집하세요.
+                4. 기존 파일의 코드 스타일과 구조를 유지하세요.
+                5. 수정 완료 후 어떤 파일의 어떤 부분을 변경했는지 요약하세요.
+                """, instruction, workspacePath, projectType.name(), fileList);
     }
 
     private String buildModifyJarvisPrompt(String command) {

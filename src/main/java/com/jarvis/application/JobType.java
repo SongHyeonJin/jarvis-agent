@@ -8,5 +8,7 @@ package com.jarvis.application;
  */
 public enum JobType {
     MODIFY_JARVIS,
-    NEW_PROJECT
+    NEW_PROJECT,
+    /** 이미 생성된 외부 워크스페이스 프로젝트를 수정한다 */
+    MODIFY_EXTERNAL
 }

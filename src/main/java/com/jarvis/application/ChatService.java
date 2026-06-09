@@ -2,10 +2,12 @@ package com.jarvis.application;
 
 import com.jarvis.domain.model.ChatMessage;
 import com.jarvis.domain.model.Conversation;
+import com.jarvis.domain.model.DevJob;
 import com.jarvis.domain.model.MessageRole;
 import com.jarvis.domain.port.in.ChatUseCase;
 import com.jarvis.domain.port.out.AiModelPort;
 import com.jarvis.domain.port.out.ConversationRepository;
+import com.jarvis.domain.port.out.DevJobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +20,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatService implements ChatUseCase {
 
+    private final ConversationRepository conversationRepository;
+    private final AiModelPort            aiModelPort;
+    private final DevJobRepository       devJobRepository;
+
     private String buildSystemPrompt() {
         String today = java.time.LocalDate.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy년 M월 d일 (E)", java.util.Locale.KOREAN));
-        return """
+
+        String base = """
                 당신은 '대현자(大賢者)', 현진님의 전용 AI 비서 J.A.R.V.I.S.입니다.
 
                 규칙:
@@ -35,11 +42,51 @@ public class ChatService implements ChatUseCase {
                 - 코드 관련 질문에는 실용적인 답변을 제공하세요.
                 - 답변은 TTS로 읽힐 것을 고려해 마크다운 기호(#, *, -, `)와 이모지 사용을 최소화하세요.
                 - 목록은 '첫째', '둘째' 또는 '1번', '2번' 같은 구어체 형식을 사용하세요.
+
+                ## Dev Agent 작업 연동 규칙
+                - 현진님이 방금 만든 프로젝트에 대해 수정을 요청하면 (예: '이거 바꿔줘', '색 고쳐줘', '버튼 추가해줘'),
+                  반드시 modify_recent_project 도구를 즉시 호출하세요. 설명만 하지 마세요.
+                - 생성된 코드 내용이 궁금하면 read_workspace_file 도구를 사용하세요.
+                - 현재 Dev 작업 상태가 궁금하면 get_recent_dev_jobs 도구를 사용하세요.
                 """.formatted(today);
+
+        String recentCtx = buildRecentJobContext();
+        return recentCtx.isBlank() ? base : base + recentCtx;
     }
 
-    private final ConversationRepository conversationRepository;
-    private final AiModelPort aiModelPort;
+    private String buildRecentJobContext() {
+        try {
+            List<DevJob> recent = devJobRepository.findRecent().stream()
+                    .filter(j -> j.getStatus() == DevJob.JobStatus.DONE
+                              || j.getStatus() == DevJob.JobStatus.RUNNING)
+                    .limit(3)
+                    .toList();
+            if (recent.isEmpty()) return "";
+
+            StringBuilder sb = new StringBuilder("\n## 최근 Dev Agent 작업 현황\n");
+            for (DevJob job : recent) {
+                sb.append(String.format("- Job #%d [%s] \"%s\"\n",
+                        job.getId(), job.getStatus(), job.getCommand()));
+                if (job.getWorkspacePath() != null && !job.getWorkspacePath().isBlank()) {
+                    sb.append(String.format("  위치: %s (유형: %s)\n",
+                            job.getWorkspacePath(),
+                            job.getProjectType() != null ? job.getProjectType() : "UNKNOWN"));
+                }
+                if (job.getChangedFiles() != null && !job.getChangedFiles().isBlank()) {
+                    String files = job.getChangedFiles().replace("\n", ", ");
+                    if (files.length() > 150) files = files.substring(0, 150) + "...";
+                    sb.append(String.format("  파일: %s\n", files));
+                }
+                if (job.getSummary() != null && !job.getSummary().isBlank()) {
+                    sb.append(String.format("  요약: %s\n", job.getSummary()));
+                }
+            }
+            sb.append("현진님이 위 프로젝트 수정을 요청하면 modify_recent_project 도구를 즉시 호출하세요.\n");
+            return sb.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
 
     @Override
     @Transactional
