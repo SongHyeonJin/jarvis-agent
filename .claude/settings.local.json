@@ -92,7 +92,8 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Get-ChildItem -Path \"d:\\\\jarvis-agent\\\\src\\\\main\\\\resources\\\\templates\" -Recurse)",
       "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c cd /d D:\\\\jarvis-agent && gradlew.bat bootRun -Dfile.encoding=UTF-8 > server.log 2> server.log.err\" -WindowStyle Hidden)",
-      "PowerShell(Get-ChildItem \"D:\\\\jarvis-agent\\\\bin\" -ErrorAction SilentlyContinue; \\(Get-Command gradle -ErrorAction SilentlyContinue\\).Source)"
+      "PowerShell(Get-ChildItem \"D:\\\\jarvis-agent\\\\bin\" -ErrorAction SilentlyContinue; \\(Get-Command gradle -ErrorAction SilentlyContinue\\).Source)",
+      "Bash(mkdir -p src/main/java/com/jarvis/adapter/in/web \\\\ *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Song\\.gradle\\caches\\jars-9",
