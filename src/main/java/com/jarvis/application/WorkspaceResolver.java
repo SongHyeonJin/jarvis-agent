@@ -23,7 +23,13 @@ public class WorkspaceResolver {
     private final AppWorkspaceProperties props;
     private final ProjectTypeAnalyzer typeAnalyzer;
 
+    // ── jarvis/자비스 는 항상 MODIFY_JARVIS (NEW_PATS보다 먼저 체크) ──
+    private static final Pattern JARVIS_PAT =
+        Pattern.compile("jarvis|자비스", Pattern.CASE_INSENSITIVE);
+
     // ── JARVIS 수정 패턴 ──────────────────────────────────────────────
+    // spring boot / gradle 은 "새로운 spring boot 프로젝트 만들어줘" 같은 NEW_PROJECT 명령과
+    // 충돌할 수 있으므로 NEW_PATS 체크 이후에 평가한다 (resolve() 참조).
     private static final List<Pattern> MODIFY_PATS = List.of(
         Pattern.compile("jarvis|자비스", Pattern.CASE_INSENSITIVE),
         Pattern.compile("spring\\s*boot|springboot|gradle|maven", Pattern.CASE_INSENSITIVE),
@@ -109,7 +115,22 @@ public class WorkspaceResolver {
 
         String lower = command.toLowerCase();
 
-        // 1) MODIFY_JARVIS 우선 판단
+        // 1) jarvis / 자비스 — 항상 MODIFY_JARVIS (NEW_PATS보다 먼저)
+        if (JARVIS_PAT.matcher(lower).find()) {
+            log.info("[WorkspaceResolver] MODIFY_JARVIS (jarvis 키워드): '{}'", abbr(command));
+            return new WorkspaceInfo(JobType.MODIFY_JARVIS, Paths.get(props.getProjectRoot()),
+                                     null, ProjectType.UNKNOWN);
+        }
+
+        // 2) NEW_PROJECT 단독 판단 — spring boot 신규 패턴 포함
+        for (Pattern p : NEW_PATS) {
+            if (p.matcher(lower).find()) {
+                log.info("[WorkspaceResolver] NEW_PROJECT (패턴 매칭): '{}'", abbr(command));
+                return buildNewProjectInfo(command);
+            }
+        }
+
+        // 3) 나머지 MODIFY_JARVIS 패턴 (spring boot / gradle / 현재 프로젝트 등)
         for (Pattern p : MODIFY_PATS) {
             if (p.matcher(lower).find()) {
                 log.info("[WorkspaceResolver] MODIFY_JARVIS (패턴 매칭): '{}'", abbr(command));
@@ -118,15 +139,7 @@ public class WorkspaceResolver {
             }
         }
 
-        // 2) NEW_PROJECT 단독 판단
-        for (Pattern p : NEW_PATS) {
-            if (p.matcher(lower).find()) {
-                log.info("[WorkspaceResolver] NEW_PROJECT (패턴 매칭): '{}'", abbr(command));
-                return buildNewProjectInfo(command);
-            }
-        }
-
-        // 3) 복합 판단: "만들어줘" + 주제 키워드
+        // 4) 복합 판단: "만들어줘" + 주제 키워드
         boolean hasMakeVerb = lower.contains("만들어") || lower.contains("개발해")
                            || lower.contains("생성해") || lower.contains("만들어줘")
                            || lower.contains("만들어주세요");
@@ -139,7 +152,7 @@ public class WorkspaceResolver {
             }
         }
 
-        // 4) 기본값: MODIFY_JARVIS
+        // 5) 기본값: MODIFY_JARVIS
         log.info("[WorkspaceResolver] MODIFY_JARVIS (기본값): '{}'", abbr(command));
         return new WorkspaceInfo(JobType.MODIFY_JARVIS, Paths.get(props.getProjectRoot()),
                                  null, ProjectType.UNKNOWN);
@@ -147,15 +160,29 @@ public class WorkspaceResolver {
 
     private WorkspaceInfo buildNewProjectInfo(String command) {
         ProjectType projectType = typeAnalyzer.analyze(command);
-        String slug   = nameResolver.resolve(command);
-        Path   workspace = Paths.get(props.getWorkspaceRoot(), slug);
+        String slug      = nameResolver.resolve(command);
+        Path   workspace = uniqueWorkspacePath(slug);
         try {
             Files.createDirectories(workspace);
             log.info("[WorkspaceResolver] NEW_PROJECT 폴더 생성: {} ({})", workspace, projectType);
         } catch (Exception e) {
             log.error("[WorkspaceResolver] 폴더 생성 실패 {}: {}", workspace, e.getMessage());
         }
-        return new WorkspaceInfo(JobType.NEW_PROJECT, workspace, slug, projectType);
+        String finalSlug = workspace.getFileName().toString();
+        return new WorkspaceInfo(JobType.NEW_PROJECT, workspace, finalSlug, projectType);
+    }
+
+    /** slug 충돌 방지: 이미 존재하면 -2, -3 … 접미사를 붙인다. */
+    private Path uniqueWorkspacePath(String slug) {
+        Path base      = Paths.get(props.getWorkspaceRoot(), slug);
+        if (!Files.exists(base)) return base;
+        int suffix = 2;
+        while (suffix < 100) {
+            Path candidate = Paths.get(props.getWorkspaceRoot(), slug + "-" + suffix);
+            if (!Files.exists(candidate)) return candidate;
+            suffix++;
+        }
+        return base;
     }
 
     private String abbr(String s) {
