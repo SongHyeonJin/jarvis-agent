@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>대현자 J.A.R.V.I.S.</title>
+<title>자비스 J.A.R.V.I.S.</title>
 <style>
 :root{
   --bg:#000812;--panel:rgba(0,14,28,.92);--border:rgba(0,180,255,.16);
@@ -306,7 +306,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 <header class="hdr">
   <div class="hdr-l">
     <span class="logo">J.A.R.V.I.S.</span>
-    <span class="logo-sub">대현자 프로토콜 v5.0</span>
+    <span class="logo-sub">자비스 프로토콜 v5.0</span>
   </div>
   <div class="hdr-clock" id="clock"></div>
   <div class="hdr-r">
@@ -384,7 +384,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="sec">
       <div class="stitle">AUDIO LEVEL</div>
       <div class="mwrap"><div class="mbar" id="mbar"></div></div>
-      <div class="pnote">박수(Clap) 또는 "대현자야"로 활성화<br>[Space] 수동 활성화</div>
+      <div class="pnote">박수(Clap) 또는 "자비스야"로 활성화<br>[Space] 수동 활성화</div>
     </div>
     <div class="sec">
       <div class="stitle">TTS ENGINE</div>
@@ -400,7 +400,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     </div>
     <div class="sec">
       <div class="stitle">CONTROLS</div>
-      <div class="pnote">● 활성화: 박수 / "대현자야"<br>● 종료: "종료" / "고마워" / "그만"<br>● [Space]: 수동 활성화/종료<br>● 60초 침묵 → 대기 모드 (STANDBY)<br>● 명시 종료 → 비활성화 (INACTIVE)</div>
+      <div class="pnote">● 활성화: 박수 / "자비스야"<br>● 종료: "종료" / "고마워" / "그만"<br>● [Space]: 수동 활성화/종료<br>● 60초 침묵 → 대기 모드 (STANDBY)<br>● 명시 종료 → 비활성화 (INACTIVE)</div>
     </div>
   </aside>
 
@@ -417,7 +417,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="oa">
       <div class="inov" id="inov">
         <button class="sbtn" id="sbtn">
-          <span>대현자 시스템 가동</span>
+          <span>자비스 시스템 가동</span>
           <span class="ssub">클릭하여 마이크 권한 허용</span>
         </button>
       </div>
@@ -495,8 +495,7 @@ const ST = {INIT:'init',INACTIVE:'inactive',STANDBY:'standby',ACTIVATING:'activa
 
 // Wake word — rolling buffer + multiple phonetic variants
 const WAKE_PATS = [
-  /대현자야/, /대\s*현\s*자\s*야/, /대현자아/, /대\s*현\s*자/,
-  /자비스야/, /자비스아/, /대현자/
+  /자비스야/, /자비스아/, /자비스/
 ];
 const WAKE_BUF_LIMIT = 60;
 
@@ -628,7 +627,7 @@ async function boot() {
     setOnline('vst'); setOnline('ast');
     loadCards();
     setState(ST.INACTIVE);
-    setFt('준비 완료 — 박수 또는 "대현자야" / [Space]로 활성화');
+    setFt('준비 완료 — 박수 또는 "자비스야" / [Space]로 활성화');
   } catch(e) {
     document.getElementById('inov').style.display = '';
     setFt('오류: ' + e.message);
@@ -891,7 +890,7 @@ async function activate() {
   console.log('[VoiceState] briefing started — STT input locked');
   await delay(320);
   console.log('[VoiceState] listening stopped for TTS (activation greeting)');
-  await speakTTS('네, 현진님. 대현자의 프로토콜을 개시합니다.');
+  await speakTTS('네, 현진님. 자비스의 프로토콜을 개시합니다.');
   setState(ST.BRIEFING);
   console.log('[VoiceState] listening stopped for TTS (daily briefing)');
   await doBriefing();
@@ -927,7 +926,7 @@ async function deactivate(msg) {
   if (msg) await speakTTS(msg);
   addMsg('s','─── 세션 종료 ───');
   setState(ST.INACTIVE);   // ← INACTIVE (비활성화), 다음 활성화 시 풀 브리핑 진행
-  setFt('비활성화 — "대현자야" 또는 박수로 활성화');
+  setFt('비활성화 — "자비스야" 또는 박수로 활성화');
 }
 
 function stopAudio() {
@@ -1033,7 +1032,7 @@ async function goStandby() {
   await speakTTS('1분간 응답이 없어 대기 모드로 전환합니다. 현진님, 필요하시면 다시 불러주십시오.');
   addMsg('s','─── 대기 모드 전환 ───');
   setState(ST.STANDBY);  // ← STANDBY (대기중), INACTIVE 아님
-  setFt('대기 중 — "대현자야" 또는 박수로 즉시 재개 가능');
+  setFt('대기 중 — "자비스야" 또는 박수로 즉시 재개 가능');
 }
 
 async function handleInput(text) {
@@ -1042,7 +1041,7 @@ async function handleInput(text) {
   try {
     const clean = text.replace(/\s/g,'');
     if (EXIT_WORDS.some(w=>clean.includes(w))) {
-      await deactivate('네, 현진님. 수고하셨습니다. 대현자 프로토콜을 일시 중단합니다.');
+      await deactivate('네, 현진님. 수고하셨습니다. 자비스 프로토콜을 일시 중단합니다.');
       return;
     }
     addMsg('u', text);
@@ -1701,7 +1700,7 @@ function addMsg(role, text) {
   const log=document.getElementById('clog');
   const d=document.createElement('div');
   d.className=`msg m${role}`;
-  const labels={u:'현진님',a:'대현자',s:''};
+  const labels={u:'현진님',a:'자비스',s:''};
   d.innerHTML=`<span class="mrole">${labels[role]||''}</span><span class="mt">${esc(text)}</span>`;
   log.appendChild(d); log.scrollTop=log.scrollHeight;
   if(role!=='s'){msgCnt++;document.getElementById('mcnt').textContent=msgCnt;}
@@ -1962,7 +1961,7 @@ document.addEventListener('keydown', e => {
 async function createConv() {
   const r=await fetch('/api/conversations',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({title:'대현자 세션 — '+new Date().toLocaleString('ko-KR')})
+    body:JSON.stringify({title:'자비스 세션 — '+new Date().toLocaleString('ko-KR')})
   });
   return (await r.json()).id;
 }
