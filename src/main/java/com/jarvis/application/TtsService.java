@@ -38,7 +38,7 @@ public class TtsService {
                     ))
                     .retrieve()
                     .bodyToMono(byte[].class)
-                    .timeout(Duration.ofSeconds(30))
+                    .timeout(Duration.ofSeconds(8))
                     .block();
         } catch (Exception e) {
             log.error("OpenAI TTS 생성 실패: {}", e.getMessage());
