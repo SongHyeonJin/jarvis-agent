@@ -1,7 +1,7 @@
 # === Gradle ===
 build/
 .gradle/
-out/
+/out/
 
 # === IDE ===
 .idea/
