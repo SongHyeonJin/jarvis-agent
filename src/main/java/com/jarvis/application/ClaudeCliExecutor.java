@@ -33,10 +33,13 @@ import java.util.function.Consumer;
 public class ClaudeCliExecutor {
 
     private static final ObjectMapper MAPPER     = new ObjectMapper();
-    private static final long         TIMEOUT_MS = 300_000; // 5분
+    private static final long         TIMEOUT_MS = 1_200_000; // 20분
 
-    /** 자동 trust 처리를 허용할 베이스 경로 (이 경로 하위 폴더만 허용) */
-    private static final String TRUST_BASE_PATH = "d:/jarvis-workspaces";
+    /** 자동 trust stdin 응답을 허용할 베이스 경로 목록 */
+    private static final List<String> TRUST_BASE_PATHS = List.of(
+        "d:/jarvis-workspaces",
+        "d:/jarvis-agent"
+    );
 
     @Value("${app.project-root:d:/jarvis-agent}")
     private String defaultProjectRoot;
@@ -53,7 +56,7 @@ public class ClaudeCliExecutor {
                                    Consumer<String> logChunk,
                                    Consumer<String> rawLogChunk,
                                    AtomicBoolean cancelled) {
-        return executeInternal(prompt, defaultProjectRoot, logChunk, rawLogChunk, cancelled);
+        return executeInternal(prompt, defaultProjectRoot, null, logChunk, rawLogChunk, cancelled);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -65,7 +68,20 @@ public class ClaudeCliExecutor {
                                    Consumer<String> logChunk,
                                    Consumer<String> rawLogChunk,
                                    AtomicBoolean cancelled) {
-        return executeInternal(prompt, workingDir, logChunk, rawLogChunk, cancelled);
+        return executeInternal(prompt, workingDir, null, logChunk, rawLogChunk, cancelled);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  공개 API — workingDir + model 명시 버전
+    // ─────────────────────────────────────────────────────────
+
+    public ExecutionResult execute(String prompt,
+                                   String workingDir,
+                                   String model,
+                                   Consumer<String> logChunk,
+                                   Consumer<String> rawLogChunk,
+                                   AtomicBoolean cancelled) {
+        return executeInternal(prompt, workingDir, model, logChunk, rawLogChunk, cancelled);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -74,6 +90,7 @@ public class ClaudeCliExecutor {
 
     private ExecutionResult executeInternal(String prompt,
                                              String workingDir,
+                                             String model,
                                              Consumer<String> logChunk,
                                              Consumer<String> rawLogChunk,
                                              AtomicBoolean cancelled) {
@@ -86,7 +103,7 @@ public class ClaudeCliExecutor {
             runDiagnostics(claudeExe, workingDir, trustable, logChunk);
 
             // ── 2. 프로세스 빌드 (-p 인자로 직접 전달) ───────
-            List<String> cmd = buildCommand(claudeExe, prompt);
+            List<String> cmd = buildCommand(claudeExe, prompt, model);
             log.info("[ClaudeCliExecutor] command={}", cmd);
             log.info("[ClaudeCliExecutor] cwd={} trustable={}", workingDir, trustable);
             if (logChunk != null) {
@@ -137,8 +154,9 @@ public class ClaudeCliExecutor {
             }
 
             // ── 3. 타임아웃 와치독 ───────────────────────────
-            final long    deadline = System.currentTimeMillis() + TIMEOUT_MS;
-            final Process fp       = proc;
+            final long          deadline    = System.currentTimeMillis() + TIMEOUT_MS;
+            final Process       fp          = proc;
+            final java.util.concurrent.atomic.AtomicBoolean timedOutFlag = new java.util.concurrent.atomic.AtomicBoolean(false);
             Thread watchdog = Thread.ofVirtual().start(() -> {
                 try {
                     while (System.currentTimeMillis() < deadline) {
@@ -146,6 +164,7 @@ public class ClaudeCliExecutor {
                         Thread.sleep(2000);
                     }
                     log.warn("[ClaudeCliExecutor] 타임아웃 → 강제 종료");
+                    timedOutFlag.set(true);
                     fp.destroyForcibly();
                 } catch (InterruptedException ignored) {}
             });
@@ -208,7 +227,12 @@ public class ClaudeCliExecutor {
             }
 
             int exit = proc.exitValue();
-            log.info("[ClaudeCliExecutor] 완료 exitCode={}", exit);
+            boolean timedOut = timedOutFlag.get();
+            log.info("[ClaudeCliExecutor] 완료 exitCode={} timedOut={}", exit, timedOut);
+            if (timedOut) {
+                if (logChunk != null) logChunk.accept("⚠ 타임아웃 (20분) — 작업이 강제 중단되었습니다.");
+                return new ExecutionResult(-1, true, false);
+            }
             if (logChunk != null)
                 logChunk.accept(exit == 0 ? "✓ Claude Code 완료" : "✗ Claude Code 오류 (exit=" + exit + ")");
             return new ExecutionResult(exit, false, false);
@@ -227,6 +251,10 @@ public class ClaudeCliExecutor {
     // ─────────────────────────────────────────────────────────
 
     List<String> buildCommand(String claudeExe, String prompt) {
+        return buildCommand(claudeExe, prompt, null);
+    }
+
+    List<String> buildCommand(String claudeExe, String prompt, String model) {
         List<String> cmd = new ArrayList<>();
         if (claudeExe.toLowerCase().endsWith(".cmd") || claudeExe.toLowerCase().endsWith(".bat")) {
             cmd.add("cmd");
@@ -239,6 +267,10 @@ public class ClaudeCliExecutor {
         cmd.add("--output-format");
         cmd.add("stream-json");
         cmd.add("--verbose");
+        if (model != null && !model.isBlank()) {
+            cmd.add("--model");
+            cmd.add(model);
+        }
         cmd.add("-p");
         cmd.add(prompt);
         return Collections.unmodifiableList(cmd);
@@ -255,7 +287,8 @@ public class ClaudeCliExecutor {
     boolean isTrustableWorkspace(String workingDir) {
         if (workingDir == null || workingDir.isBlank()) return false;
         String normalized = workingDir.replace('\\', '/').toLowerCase();
-        return normalized.startsWith(TRUST_BASE_PATH.replace('\\', '/').toLowerCase());
+        return TRUST_BASE_PATHS.stream()
+            .anyMatch(base -> normalized.startsWith(base.toLowerCase()));
     }
 
     // ─────────────────────────────────────────────────────────
