@@ -35,7 +35,16 @@ public class ProjectTypeAnalyzer {
         Pattern.compile("gradle.*(?:java|spring)", Pattern.CASE_INSENSITIVE),
         Pattern.compile("java.*(?:api|서버|server|spring)", Pattern.CASE_INSENSITIVE),
         Pattern.compile("(?:api|rest).*(?:서버|server).*java", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("spring.*(?:jpa|mvc|webflux|security|data)", Pattern.CASE_INSENSITIVE)
+        Pattern.compile("spring.*(?:jpa|mvc|webflux|security|data)", Pattern.CASE_INSENSITIVE),
+        // 백엔드/서비스 성격의 일반 요청 → Spring Boot 우선
+        Pattern.compile("(?:백엔드|backend).*(?:만들|개발|서버|api)", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("(?:rest|restful)\\s*api", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("crud.*(?:api|서버|서비스|시스템)", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("(?:api|서버|server)\\s*(?:만들|개발|구축|생성)", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("(?:관리|admin|management)\\s*(?:시스템|서비스|서버|api)", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("(?:로그인|회원가입|인증|auth).*(?:서버|서비스|api|백엔드)", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("(?:서비스|service)\\s*(?:만들|개발|구축|서버)", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("(?:데이터베이스|db|database).*(?:서버|서비스|api)", Pattern.CASE_INSENSITIVE)
     );
 
     // ── React ─────────────────────────────────────────────────────
@@ -120,8 +129,8 @@ public class ProjectTypeAnalyzer {
         if (matches(lower, GAME_PATS))        { log.info("[ProjectTypeAnalyzer] GAME: '{}'", abbr(command));              return ProjectType.GAME; }
         if (matches(lower, WEB_APP_PATS))     { log.info("[ProjectTypeAnalyzer] WEB_APP: '{}'", abbr(command));           return ProjectType.WEB_APP; }
 
-        log.info("[ProjectTypeAnalyzer] UNKNOWN (기본 WEB_APP 처리): '{}'", abbr(command));
-        return ProjectType.WEB_APP; // 신규 프로젝트는 기본적으로 WEB_APP
+        log.info("[ProjectTypeAnalyzer] UNKNOWN (기본 SPRING_BOOT 처리): '{}'", abbr(command));
+        return ProjectType.SPRING_BOOT; // 기본값: Java/Spring Boot 우선
     }
 
     private boolean matches(String lower, List<Pattern> patterns) {
