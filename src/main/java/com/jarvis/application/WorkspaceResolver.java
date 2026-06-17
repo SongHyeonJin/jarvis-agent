@@ -23,6 +23,31 @@ public class WorkspaceResolver {
     private final AppWorkspaceProperties props;
     private final ProjectTypeAnalyzer typeAnalyzer;
 
+    // ── 최근 생성된 외부 프로젝트 추적 (NEW_PROJECT 완료 시 갱신) ──────
+    private static volatile Path        lastNewProjectPath = null;
+    private static volatile ProjectType lastNewProjectType = ProjectType.UNKNOWN;
+
+    // ── 최근 생성 프로젝트 수정 패턴 ─────────────────────────────────
+    private static final List<Pattern> MODIFY_RECENT_PATS = List.of(
+        // "방금 만든/생성한" 참조
+        Pattern.compile("방금.*만든"),
+        Pattern.compile("방금.*생성"),
+        Pattern.compile("방금.*만들어"),
+        // "그 프로젝트/게임/웹/앱" + 수정 동사
+        Pattern.compile("그\\s*(?:프로젝트|게임|웹|앱|사이트|확장).*(?:수정|변경|추가|고쳐|개선|기능|개발)"),
+        Pattern.compile("해당\\s*(?:프로젝트|게임|웹|앱|사이트|확장)"),
+        // 외부 프로젝트 유형 키워드 + 수정 동사 (자비스 관련 키워드 없는 경우)
+        Pattern.compile("(?:게임|게임\\s*프로젝트).*(?:수정|추가|변경|고쳐|기능)"),
+        Pattern.compile("(?:수정|추가|변경|고쳐|기능).*(?:게임\\s*프로젝트)"),
+        Pattern.compile("(?:크롬\\s*확장|확장\\s*프로그램).*(?:수정|추가|변경|고쳐|기능)"),
+        // "만든 거/것/프로젝트" 참조
+        Pattern.compile("만든\\s*(?:것|거|프로젝트|게임|웹|앱).*(?:수정|변경|추가|고쳐|개선)"),
+        Pattern.compile("(?:수정|변경|추가|고쳐|개선).*만든\\s*(?:것|거|프로젝트|게임|웹|앱)"),
+        // "거기에/그거" 참조
+        Pattern.compile("거기.*(?:추가|수정|변경|기능)"),
+        Pattern.compile("그거.*(?:수정|변경|추가|기능)")
+    );
+
     // ── JARVIS 수정 패턴 ──────────────────────────────────────────────
     private static final List<Pattern> MODIFY_PATS = List.of(
         Pattern.compile("jarvis|자비스", Pattern.CASE_INSENSITIVE),
@@ -75,7 +100,13 @@ public class WorkspaceResolver {
         Pattern.compile("할\\s*일.*(?:앱|만들)"),
         // 독립 프로젝트 명시
         Pattern.compile("(?:새|신규|독립)\\s*(?:프로젝트|웹앱|앱|사이트|게임)"),
-        Pattern.compile("standalone|단독\\s*실행", Pattern.CASE_INSENSITIVE)
+        Pattern.compile("(?:새로운|다른)\\s*(?:프로젝트|앱|웹|서버|게임|사이트)"),
+        Pattern.compile("standalone|단독\\s*실행", Pattern.CASE_INSENSITIVE),
+        // 응용 프로그램
+        Pattern.compile("응용\\s*프로그램"),
+        // 웹 사이트 (띄어쓰기 포함)
+        Pattern.compile("웹\\s*사이트.*만들"),
+        Pattern.compile("만들.*웹\\s*사이트")
     );
 
     // ── 복합 판단: 만들어 + 주제 키워드 → NEW_PROJECT ──────────────
@@ -91,7 +122,13 @@ public class WorkspaceResolver {
         Pattern.compile("브라우저"),
         Pattern.compile("북마크"),
         Pattern.compile("메모\\s*앱"),
-        Pattern.compile("채팅\\s*앱")
+        Pattern.compile("채팅\\s*앱"),
+        // 독립 웹/앱/프로젝트
+        Pattern.compile("(?:새로운|새|다른)\\s*프로젝트"),
+        Pattern.compile("(?:웹|앱|사이트)\\s*(?:프로젝트|만들|개발|생성)"),
+        Pattern.compile("웹"),
+        Pattern.compile("앱"),
+        Pattern.compile("응용\\s*프로그램")
     );
 
     public record WorkspaceInfo(
@@ -109,12 +146,24 @@ public class WorkspaceResolver {
 
         String lower = command.toLowerCase();
 
-        // 1) MODIFY_JARVIS 우선 판단
+        // 1) MODIFY_JARVIS 우선 판단 (자비스 프로젝트 → 항상 d:/jarvis-agent)
         for (Pattern p : MODIFY_PATS) {
             if (p.matcher(lower).find()) {
                 log.info("[WorkspaceResolver] MODIFY_JARVIS (패턴 매칭): '{}'", abbr(command));
                 return new WorkspaceInfo(JobType.MODIFY_JARVIS, Paths.get(props.getProjectRoot()),
                                          null, ProjectType.UNKNOWN);
+            }
+        }
+
+        // 1.5) MODIFY_EXTERNAL: 최근 생성된 외부 프로젝트를 수정하는 명령
+        if (lastNewProjectPath != null) {
+            for (Pattern p : MODIFY_RECENT_PATS) {
+                if (p.matcher(lower).find()) {
+                    log.info("[WorkspaceResolver] MODIFY_EXTERNAL (최근 프로젝트 수정): '{}' → {}",
+                             abbr(command), lastNewProjectPath);
+                    return new WorkspaceInfo(JobType.MODIFY_EXTERNAL, lastNewProjectPath,
+                                             null, lastNewProjectType);
+                }
             }
         }
 
@@ -155,6 +204,9 @@ public class WorkspaceResolver {
         } catch (Exception e) {
             log.error("[WorkspaceResolver] 폴더 생성 실패 {}: {}", workspace, e.getMessage());
         }
+        // 최근 생성 프로젝트 추적 — MODIFY_RECENT 라우팅에 사용
+        lastNewProjectPath = workspace;
+        lastNewProjectType = projectType;
         return new WorkspaceInfo(JobType.NEW_PROJECT, workspace, slug, projectType);
     }
 
