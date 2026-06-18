@@ -53,11 +53,42 @@ public class DevJobService {
     private final ScaffoldService         scaffoldService;
     private final AssetService            assetService;
     private final ManifestValidator       manifestValidator;
+    private final AutoPreviewService      autoPreviewService;
 
     /** 실행 중인 잡의 SSE 싱크 (replay(500)) */
     private final ConcurrentHashMap<Long, Sinks.Many<String>> sinks   = new ConcurrentHashMap<>();
     /** 취소 신호 */
     private final ConcurrentHashMap<Long, AtomicBoolean>      cancels = new ConcurrentHashMap<>();
+    /** Claude Code CLI 동시 실행 방지 — 한 번에 한 프로세스만 허용 */
+    private final java.util.concurrent.Semaphore claudeSemaphore = new java.util.concurrent.Semaphore(1);
+
+    private static final String MODEL_OPUS   = "claude-opus-4-8";
+    private static final String MODEL_SONNET = "claude-sonnet-4-6";
+    private static final String MODEL_HAIKU  = "claude-haiku-4-5-20251001";
+
+    /** NEW_PROJECT 중 이 키워드가 포함되면 Opus 투입 — 대형·복잡 아키텍처 */
+    private static final List<String> OPUS_PROJECT_KEYWORDS = List.of(
+        "풀스택", "full.?stack", "멀티.?모듈", "multi.?module",
+        "마이크로서비스", "microservice", "msa",
+        "인증.*서버", "auth.*server", "oauth", "jwt.*서버",
+        "결제", "payment", "대규모", "플랫폼", "platform",
+        "헥사고날", "hexagonal", "ddd", "cqrs", "이벤트.*소싱", "event.?sourcing",
+        "보안.*시스템", "security.*system", "관리.*플랫폼", "어드민.*시스템"
+    );
+
+    private static final List<String> COMPLEX_KEYWORDS = List.of(
+        "기능", "feature", "api", "endpoint", "controller", "서비스", "컨트롤러",
+        "구현", "implement", "로직", "logic", "알고리즘", "algorithm",
+        "레이어", "layer", "리팩토링", "refactor", "인증", "auth", "데이터베이스", "database"
+    );
+
+    private static final List<String> SIMPLE_KEYWORDS = List.of(
+        "색상", "색깔", "컬러", "color", "colour",
+        "폰트", "글꼴", "font", "글자", "텍스트", "문구",
+        "크기", "여백", "padding", "margin", "배경", "background",
+        "테두리", "border", "그림자", "shadow", "제목", "이름", "title", "label",
+        "위치", "정렬", "align", "position", "아이콘", "icon"
+    );
 
     // ─────────────────────────────────────────────────────────
     //  공개 API
@@ -71,7 +102,7 @@ public class DevJobService {
         DevJob job = DevJob.builder()
                 .command(command)
                 .prompt(prompt)
-                .status(DevJob.JobStatus.PENDING)
+                .status(DevJob.JobStatus.QUEUED)
                 .jobType(wsInfo.jobType().name())
                 .projectType(wsInfo.projectType().name())
                 .workspacePath(wsInfo.projectRoot().toString())
@@ -131,6 +162,79 @@ public class DevJobService {
     public Optional<DevJob> getJob(Long jobId) { return jobRepo.findById(jobId); }
     public List<DevJob>     listJobs()          { return jobRepo.findRecent();    }
 
+    /** 완료된 잡 삭제 (DB에서 제거) */
+    public void deleteJob(Long jobId) {
+        jobRepo.findById(jobId).ifPresent(job -> {
+            if (job.getStatus() == DevJob.JobStatus.DONE
+             || job.getStatus() == DevJob.JobStatus.FAILED
+             || job.getStatus() == DevJob.JobStatus.CANCELLED) {
+                jobRepo.deleteById(jobId);
+                log.info("[DevJobService] Job #{} deleted", jobId);
+            } else {
+                log.warn("[DevJobService] Cannot delete non-terminal job #{} status={}", jobId, job.getStatus());
+            }
+        });
+    }
+
+    /**
+     * 기존 외부 워크스페이스를 수정하는 잡을 제출한다.
+     * WorkspaceResolver 패턴 매칭을 우회하고 지정 경로를 직접 사용한다.
+     */
+    public DevJob submitModificationJob(String instruction, String workspacePath, String projectTypeName) {
+        ProjectType pt     = safeProjectType(projectTypeName);
+        String      prompt = buildModifyExternalPrompt(instruction, workspacePath, pt);
+        String      wsKey  = workspacePath;
+
+        DevJob job = DevJob.builder()
+                .command(instruction)
+                .prompt(prompt)
+                .status(DevJob.JobStatus.QUEUED)
+                .jobType(JobType.MODIFY_EXTERNAL.name())
+                .projectType(pt.name())
+                .workspacePath(wsKey)
+                .createdAt(LocalDateTime.now())
+                .build();
+        job = jobRepo.save(job);
+        Long jobId = job.getId();
+
+        Sinks.Many<String> sink   = Sinks.many().replay().limit(500);
+        AtomicBoolean      cancel = new AtomicBoolean(false);
+        sinks.put(jobId, sink);
+        cancels.put(jobId, cancel);
+
+        final Long        fId  = jobId;
+        final ProjectType fPt  = pt;
+        emit(sink, "status", "QUEUED");
+        Schedulers.boundedElastic().schedule(() ->
+                runJob(fId, wsKey, JobType.MODIFY_EXTERNAL, fPt, instruction, sink, cancel));
+        log.info("[DevJobService] ModificationJob #{} 제출: path={} type={}", jobId, wsKey, pt);
+        return job;
+    }
+
+    private ProjectType safeProjectType(String name) {
+        if (name == null || name.isBlank()) return ProjectType.UNKNOWN;
+        try { return ProjectType.valueOf(name); } catch (Exception e) { return ProjectType.UNKNOWN; }
+    }
+
+    private String selectModel(String command, JobType jobType) {
+        String lower = command.toLowerCase();
+
+        if (jobType == JobType.NEW_PROJECT) {
+            // 대형·복잡 아키텍처 → Opus (추론력 필요)
+            for (String pat : OPUS_PROJECT_KEYWORDS) {
+                if (lower.matches(".*" + pat + ".*")) return MODEL_OPUS;
+            }
+            // 일반 신규 프로젝트 → Sonnet
+            return MODEL_SONNET;
+        }
+
+        // MODIFY_* 작업: 단순 UI 변경 → Haiku, 나머지 → Sonnet
+        for (String kw : SIMPLE_KEYWORDS) {
+            if (lower.contains(kw)) return MODEL_HAIKU;
+        }
+        return MODEL_SONNET;
+    }
+
     // ─────────────────────────────────────────────────────────
     //  비동기 실행 루프
     // ─────────────────────────────────────────────────────────
@@ -141,6 +245,29 @@ public class DevJobService {
         DevJob job = jobRepo.findById(jobId).orElseThrow();
         Path   projectPath = Paths.get(workPath);
 
+        // ── 세마포어 대기: 다른 Claude Code CLI가 실행 중이면 완료까지 대기 ──
+        if (!claudeSemaphore.tryAcquire()) {
+            emit(sink, "log", "━━━ 대기열 등록 ━━━");
+            emit(sink, "log", "▶ 다른 작업이 실행 중입니다. 완료 후 자동 시작됩니다.");
+            try {
+                while (!claudeSemaphore.tryAcquire(2, TimeUnit.SECONDS)) {
+                    if (cancel.get()) {
+                        job.markCancelled();
+                        jobRepo.save(job);
+                        emit(sink, "status", "CANCELLED");
+                        emit(sink, "log", "[ CANCELLED: 대기 중 취소됨 ]");
+                        sink.tryEmitComplete();
+                        return;
+                    }
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+            emit(sink, "log", "▶ 이전 작업 완료 — 시작합니다.");
+        }
+
+        try {
         job.markRunning();
         jobRepo.save(job);
         emit(sink, "status",      "RUNNING");
@@ -148,12 +275,27 @@ public class DevJobService {
         emit(sink, "projectType", projectType.name());
         emit(sink, "workspace",   workPath);
 
+        String selectedModel = selectModel(command, jobType);
+
         emit(sink, "log", "━━━ JARVIS Dev Agent 시작 ━━━");
         emit(sink, "log", "▶ Job #" + jobId + " 생성됨");
         emit(sink, "log", "▶ 명령: " + command);
         emit(sink, "log", "▶ 작업 유형: " + jobType.name());
         emit(sink, "log", "▶ 프로젝트 유형: " + projectType.name());
         emit(sink, "log", "▶ 작업 위치: " + workPath);
+        emit(sink, "log", "▶ AI 모델: " + (selectedModel != null ? selectedModel : "claude-sonnet (기본)"));
+
+        // ── MODIFY_EXTERNAL 전처리 (기존 프로젝트 수정) ──────────
+        if (jobType == JobType.MODIFY_EXTERNAL) {
+            emit(sink, "log", "▶ 외부 프로젝트 수정 모드");
+            emit(sink, "log", "▶ 작업 위치: " + workPath);
+            if (!Files.exists(projectPath)) {
+                String msg = "ERROR: 프로젝트 폴더 없음: " + workPath;
+                emit(sink, "log", msg);
+                failJob(job, jobId, msg, sink);
+                return;
+            }
+        }
 
         // ── NEW_PROJECT 전처리 ────────────────────────────────
         if (jobType == JobType.NEW_PROJECT) {
@@ -220,7 +362,7 @@ public class DevJobService {
         var fullLog = new StringBuilder();
         var rawLog  = new StringBuilder();
 
-        ClaudeCliExecutor.ExecutionResult result = runClaude(job.getPrompt(), workPath, fullLog, rawLog, sink, cancel);
+        ClaudeCliExecutor.ExecutionResult result = runClaude(job.getPrompt(), workPath, selectedModel, fullLog, rawLog, sink, cancel);
 
         // ── 취소 처리 ────────────────────────────────────────
         if (cancel.get()) {
@@ -248,8 +390,41 @@ public class DevJobService {
             changedFiles = gitService.getChangedFiles();
             if (!diffStat.isBlank()) emit(sink, "log", diffStat);
 
+            // exit=1 + 변경 파일 없음 → 자동 1회 재시도
+            if (result.exitCode() != 0 && !result.cancelled() && !result.timedOut()
+                    && changedFiles.isEmpty() && !cancel.get()) {
+                emit(sink, "log", "");
+                emit(sink, "log", "━━━ Claude Code exit=" + result.exitCode() + " → 자동 재시도 ━━━");
+                emit(sink, "log", "▶ 변경 사항 없음, 재시도합니다...");
+                String retryPrompt = job.getPrompt() + "\n\n[재시도] 이전 실행이 중단되었습니다. "
+                        + "반드시 파일을 직접 수정하고 작업을 완료하세요. Write/Edit 도구를 사용하세요.";
+                rawLog.setLength(0);
+                result = runClaude(retryPrompt, workPath, null, fullLog, rawLog, sink, cancel);
+                if (!cancel.get()) {
+                    diffStat     = gitService.getDiffStat();
+                    diff         = gitService.getDiff();
+                    changedFiles = gitService.getChangedFiles();
+                    if (!diffStat.isBlank()) emit(sink, "log", diffStat);
+                }
+            }
+
             emit(sink, "log", "\n━━━ Gradle 빌드 검증 중... ━━━");
             buildOk = runGradleBuild(sink);
+
+        } else if (jobType == JobType.MODIFY_EXTERNAL) {
+            // 외부 프로젝트 수정 — exit=1 시 1회 재시도
+            if (result.exitCode() != 0 && !result.cancelled() && !result.timedOut() && !cancel.get()) {
+                emit(sink, "log", "");
+                emit(sink, "log", "━━━ Claude Code exit=" + result.exitCode() + " → 자동 재시도 ━━━");
+                String retryPrompt = job.getPrompt() + "\n\n[재시도] 이전 실행이 중단되었습니다. "
+                        + "반드시 Edit/Write 도구로 파일을 직접 수정하고 작업을 완료하세요.";
+                rawLog.setLength(0);
+                result = runClaude(retryPrompt, workPath, null, fullLog, rawLog, sink, cancel);
+            }
+            // 외부 프로젝트 수정 — Files.walk 로 변경 파일 확인
+            emit(sink, "log", "\n━━━ 수정된 파일 확인 중... ━━━");
+            changedFiles = listCreatedFiles(workPath, sink);
+            buildOk = true;
 
         } else {
             // NEW_PROJECT → Files.walk 기반 파일 목록
@@ -279,7 +454,7 @@ public class DevJobService {
                 emit(sink, "log", "▶ 파일이 부족하여 재시도합니다...");
                 String retryPrompt = buildRetryPrompt(command, workPath, projectType, changedFiles);
                 rawLog.setLength(0);
-                result = runClaude(retryPrompt, workPath, fullLog, rawLog, sink, cancel);
+                result = runClaude(retryPrompt, workPath, null, fullLog, rawLog, sink, cancel);
 
                 if (!cancel.get()) {
                     emit(sink, "log", "\n━━━ 재시도 후 파일 검증 중... ━━━");
@@ -311,12 +486,27 @@ public class DevJobService {
         String finalStatus = actualSuccess ? "DONE" : "FAILED";
         emit(sink, "status", finalStatus);
         emit(sink, "log",    "\n━━━ " + (actualSuccess ? "완료" : "실패") + " ━━━\n" + summary);
+
+        // ── 미리보기 자동 실행 (NEW_PROJECT / MODIFY_EXTERNAL 성공 시) ──
+        if (actualSuccess && (jobType == JobType.NEW_PROJECT || jobType == JobType.MODIFY_EXTERNAL)) {
+            String slug = projectPath.getFileName().toString();
+            autoPreviewService.launchPreview(jobId, workPath, projectType.name(), slug)
+                .ifPresent(url -> {
+                    emit(sink, "log",     "🌐 미리보기 서버 시작 중... " + url);
+                    emit(sink, "preview", url);
+                    log.info("[DevJobService] Job #{} 미리보기 URL: {}", jobId, url);
+                });
+        }
+
         emit(sink, "done",   buildDonePayload(job));
         sink.tryEmitComplete();
         cleanup(jobId);
 
         log.info("[DevJobService] Job #{} {} (jobType={} projectType={} files={} build={})",
                  jobId, finalStatus, jobType, projectType, changedFiles.size(), buildOk);
+        } finally {
+            claudeSemaphore.release();
+        }
     }
 
     // ─────────────────────────────────────────────────────────
@@ -324,13 +514,14 @@ public class DevJobService {
     // ─────────────────────────────────────────────────────────
 
     private ClaudeCliExecutor.ExecutionResult runClaude(
-            String prompt, String workPath,
+            String prompt, String workPath, String model,
             StringBuilder fullLog, StringBuilder rawLog,
             Sinks.Many<String> sink, AtomicBoolean cancel) {
 
         return executor.execute(
             prompt,
             workPath,
+            model,
             chunk -> {
                 fullLog.append(chunk).append('\n');
                 emit(sink, "log", chunk);
@@ -362,7 +553,14 @@ public class DevJobService {
         if (result.cancelled() || result.timedOut()) return false;
 
         if (jobType == JobType.MODIFY_JARVIS) {
+            boolean hasChanges = !changedFiles.isEmpty();
+            if (hasChanges && buildOk) return true;
             return result.exitCode() == 0 && buildOk;
+        }
+
+        // MODIFY_EXTERNAL: 파일이 존재하면 성공 (재작성이 아닌 편집이므로 파일 목록은 의미 없음)
+        if (jobType == JobType.MODIFY_EXTERNAL) {
+            return !result.timedOut() && !result.cancelled();
         }
 
         // NEW_PROJECT: 파일 기반 판정 (exitCode 무관)
@@ -623,9 +821,11 @@ public class DevJobService {
 
     private String buildPrompt(String command, JobType jobType,
                                 java.nio.file.Path workPath, ProjectType projectType) {
-        return jobType == JobType.NEW_PROJECT
-            ? buildNewProjectPrompt(command, workPath, projectType)
-            : buildModifyJarvisPrompt(command);
+        return switch (jobType) {
+            case NEW_PROJECT    -> buildNewProjectPrompt(command, workPath, projectType);
+            case MODIFY_EXTERNAL -> buildModifyExternalPrompt(command, workPath.toString(), projectType);
+            default              -> buildModifyJarvisPrompt(command);
+        };
     }
 
     private String buildNewProjectPrompt(String command,
@@ -644,13 +844,11 @@ public class DevJobService {
         sb.append("사용자 요청:\n").append(command).append("\n\n");
 
         sb.append("""
-                공통 규칙:
-                1. 기존 JARVIS 프로젝트(d:/jarvis-agent)는 절대 수정하지 않습니다.
-                2. 현재 작업 디렉토리 밖으로 나가지 않습니다.
-                3. 파일을 하나도 만들지 않고 설명만 하면 실패입니다.
-                4. 실행 가능한 최소 결과물을 만듭니다.
-                5. README.md에 한국어로 설치/실행 방법을 작성합니다.
-                6. Scaffold로 이미 생성된 파일이 있으면 덮어써서 내용을 채워주세요.
+                규칙:
+                - 현재 작업 디렉토리에만 파일을 생성하세요 (d:/jarvis-agent 수정 금지).
+                - 설명만 하지 말고 Write/Edit 도구로 파일을 직접 작성하세요.
+                - 이미 생성된 Scaffold 파일이 있다면 덮어써서 내용을 채워주세요.
+                - README.md에 한국어로 실행 방법을 작성하세요.
 
                 """);
 
@@ -743,31 +941,52 @@ public class DevJobService {
         return sb.toString();
     }
 
+    private String buildModifyExternalPrompt(String instruction, String workspacePath, ProjectType projectType) {
+        // 현재 파일 목록 수집 (Claude가 무엇을 수정해야 하는지 알 수 있도록)
+        String fileList;
+        try {
+            fileList = java.nio.file.Files.walk(java.nio.file.Paths.get(workspacePath))
+                    .filter(java.nio.file.Files::isRegularFile)
+                    .filter(p -> !p.toString().replace('\\', '/').contains("/.git/"))
+                    .filter(p -> !p.toString().replace('\\', '/').contains("/node_modules/"))
+                    .filter(p -> !p.toString().replace('\\', '/').contains("/preview.log"))
+                    .map(p -> "  - " + java.nio.file.Paths.get(workspacePath).relativize(p).toString().replace('\\', '/'))
+                    .sorted()
+                    .collect(java.util.stream.Collectors.joining("\n"));
+        } catch (Exception e) {
+            fileList = "  (파일 목록 조회 실패)";
+        }
+
+        return String.format("""
+                이 프로젝트의 파일을 수정해주세요.
+
+                수정 요청: %s
+                작업 디렉토리: %s
+                프로젝트 유형: %s
+
+                현재 파일 구조:
+                %s
+
+                수정 규칙:
+                1. 반드시 수정이 필요한 파일을 Read 도구로 먼저 읽으세요.
+                2. Edit 도구로 변경이 필요한 부분만 최소한으로 수정하세요.
+                3. 파일 전체를 다시 쓰지 마세요 — 변경 부분만 편집하세요.
+                4. 기존 파일의 코드 스타일과 구조를 유지하세요.
+                5. 수정 완료 후 어떤 파일의 어떤 부분을 변경했는지 요약하세요.
+                """, instruction, workspacePath, projectType.name(), fileList);
+    }
+
     private String buildModifyJarvisPrompt(String command) {
         return String.format("""
-                다음 기능을 이 Spring Boot 프로젝트에 즉시 구현해 주세요.
+                JARVIS Spring Boot 프로젝트를 아래 요청에 맞게 수정해 주세요.
 
                 요청사항: %s
 
-                프로젝트 환경:
-                - 루트 패키지: com.jarvis
-                - 아키텍처: 헥사고날 (adapter/in/web → application → domain/model, domain/port/out)
-                - DB: H2 인메모리, Spring Data JPA (ddl-auto=update)
-                - 의존성: Spring Web, Spring Data JPA, Lombok, H2, WebFlux, Thymeleaf
-                - Java 21, Spring Boot 3.4.5, Gradle Kotlin DSL
+                프로젝트: com.jarvis, hexagonal architecture (adapter/in/web → application → domain)
+                기술: Java 21, Spring Boot 3.4.5, JPA/H2, WebFlux, Lombok, TailwindCSS CDN
+                기존 엔티티: Todo, Memo, Schedule
 
-                기존 엔티티: Todo, Memo, Schedule (id/title/description + 각자 고유 필드)
-
-                구현 규칙:
-                1. @Entity: @Id + @GeneratedValue(strategy=GenerationType.IDENTITY) 필수
-                2. Repository: JpaRepository<Entity, Long>, 패키지 domain/port/out
-                3. @RestController: 완전한 CRUD 엔드포인트
-                4. @Service: @Transactional, Lombok (@Slf4j, @RequiredArgsConstructor)
-                5. HTML: Thymeleaf + TailwindCSS CDN, fetch API로 REST 호출
-                6. 고유한 API 경로 사용 (/api/[기능명])
-                7. 각 파일: public 클래스 하나만
-
-                파일을 직접 생성/수정해 주세요.
+                기존 코드의 패턴과 스타일을 참고해 일관성 있게 구현하고, 파일을 직접 생성/수정해 주세요.
                 """, command);
     }
 
