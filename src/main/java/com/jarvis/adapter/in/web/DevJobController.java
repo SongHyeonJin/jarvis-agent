@@ -49,6 +49,13 @@ public class DevJobController {
         return ResponseEntity.ok(Map.of("jobId", id, "cancelled", true));
     }
 
+    /** 완료된 잡 영구 삭제 */
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
+        jobService.deleteJob(id);
+        return ResponseEntity.ok(Map.of("jobId", id, "deleted", true));
+    }
+
     /** 잡 상세 조회 */
     @GetMapping("/{id}")
     public ResponseEntity<DevJob> getJob(@PathVariable Long id) {

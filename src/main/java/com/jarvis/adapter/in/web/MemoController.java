@@ -1,5 +1,6 @@
 package com.jarvis.adapter.in.web;
 
+import com.jarvis.application.CardEventEmitter;
 import com.jarvis.domain.model.Memo;
 import com.jarvis.domain.port.in.MemoUseCase;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.List;
 public class MemoController {
 
     private final MemoUseCase memoUseCase;
+    private final CardEventEmitter cardEventEmitter;
 
     @GetMapping
     public ResponseEntity<List<Memo>> getAll(@RequestParam(required = false) String tag) {
@@ -30,7 +32,9 @@ public class MemoController {
 
     @PostMapping
     public ResponseEntity<Memo> create(@RequestBody Memo memo) {
-        return ResponseEntity.ok(memoUseCase.create(memo));
+        Memo created = memoUseCase.create(memo);
+        cardEventEmitter.broadcast("memo");
+        return ResponseEntity.ok(created);
     }
 
     @PutMapping("/{id}")
