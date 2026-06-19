@@ -1,5 +1,6 @@
 package com.jarvis.adapter.in.web;
 
+import com.jarvis.application.CardEventEmitter;
 import com.jarvis.domain.model.Todo;
 import com.jarvis.domain.port.in.TodoUseCase;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.List;
 public class TodoController {
 
     private final TodoUseCase todoUseCase;
+    private final CardEventEmitter cardEventEmitter;
 
     @GetMapping
     public ResponseEntity<List<Todo>> getAll() {
@@ -27,7 +29,9 @@ public class TodoController {
 
     @PostMapping
     public ResponseEntity<Todo> create(@RequestBody Todo todo) {
-        return ResponseEntity.ok(todoUseCase.create(todo));
+        Todo created = todoUseCase.create(todo);
+        cardEventEmitter.broadcast("todo");
+        return ResponseEntity.ok(created);
     }
 
     @PutMapping("/{id}")
