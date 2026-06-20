@@ -8,6 +8,7 @@
 - 비즈니스 로직은 Service 계층에만. Controller는 위임만.
 - Lombok 필수 (`@RequiredArgsConstructor`, `@Slf4j`, `@Getter`).
 - 예외 처리는 `@RestControllerAdvice`에서 전역 처리.
+- **개발 요청 시 Java/Spring Boot 우선 사용.** 구현이 간단하거나 다른 언어가 필수적인 경우에만 다른 언어 허용.
 
 ## 패키지 구조
 ```
@@ -21,9 +22,11 @@ tool/               → Spring AI @Tool classes
 ```
 
 ## AI 라우팅
-- **Claude Sonnet** → `AutoDevService`, `ClaudeCliExecutor`, `DevJobService` (복잡한 코드 작업)
-- **GPT-4o-mini** → `ChatService`, `BriefingService` (일반 대화·요약)
+- **Claude Sonnet 4.6** → `AnthropicChatAdapter` (ChatService — 대화·도구호출), `ClaudeCliExecutor` (일반 NEW_PROJECT·MODIFY)
+- **Claude Opus 4.8** → `ClaudeCliExecutor` (복잡 NEW_PROJECT — MSA·풀스택·결제·보안·플랫폼 등 대형 아키텍처)
+- **Claude Haiku** → `DevJobService` (단순 UI/스타일 수정 — `selectModel()`이 자동 감지)
 - AI 직접 호출 금지 — 반드시 `AiModelPort` 인터페이스를 통해 라우팅.
+- CLI 모델 선택: `DevJobService.selectModel()` → `--model` 플래그로 Claude CLI에 전달
 
 ## 커스텀 커맨드
 - `/new-feature <Name>` — 전 계층 스캐폴딩 (Domain → Port → Service → Controller)
