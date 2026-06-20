@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:#000812;color:#00d4ff;
+    font-family:'Courier New',monospace;font-size:10px;
+    display:flex;align-items:center;justify-content:space-between;
+    height:52px;padding:0 12px;
+    border:1px solid rgba(0,212,255,.25);
+    user-select:none;overflow:hidden;
+  }
+  #dot{width:7px;height:7px;border-radius:50%;background:#555;flex-shrink:0;margin-right:8px;transition:background .3s;}
+  #dot.ok{background:#00ff88;box-shadow:0 0 6px #00ff88;}
+  #dot.err{background:#ff3333;}
+  #lbl{flex:1;letter-spacing:1px;color:rgba(158,216,240,.7);}
+  #vol{width:60px;height:4px;background:rgba(0,180,255,.1);border-radius:2px;overflow:hidden;flex-shrink:0;}
+  #vbar{height:100%;width:0%;background:#00d4ff;transition:width .05s;}
+</style>
+</head>
+<body>
+  <div id="dot"></div>
+  <span id="lbl">자비스 리스너 초기화 중...</span>
+  <div id="vol"><div id="vbar"></div></div>
+<script src="listener.js"></script>
+</body>
+</html>

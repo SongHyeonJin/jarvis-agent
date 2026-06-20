@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "자비스 활성화기",
+  "version": "1.2",
+  "description": "자비스 열기 단축키. 음성/박수 인식은 별도 Python 앱(jarvis-listener)이 담당합니다.",
+  "permissions": [
+    "tabs",
+    "windows",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:8081/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "자비스 열기",
+    "default_popup": "popup.html"
+  }
+}

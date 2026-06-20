@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  body{width:230px;padding:14px;font-family:'Courier New',monospace;
+    background:#000812;color:#9ed8f0;font-size:11px;margin:0;}
+  h3{color:#00d4ff;letter-spacing:3px;font-size:11px;margin:0 0 12px;text-transform:uppercase;}
+  .btn{width:100%;padding:8px;margin-bottom:7px;background:rgba(0,212,255,.07);
+    border:1px solid #00d4ff;color:#00d4ff;font-family:'Courier New',monospace;
+    font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;}
+  .btn:hover{background:rgba(0,212,255,.18);}
+  .divider{border:none;border-top:1px solid rgba(0,180,255,.12);margin:10px 0;}
+  .hint{font-size:9px;color:rgba(158,216,240,.38);line-height:1.75;}
+  .hint b{color:rgba(0,212,255,.6);}
+</style>
+</head>
+<body>
+<h3>J.A.R.V.I.S.</h3>
+<button class="btn" id="openBtn">자비스 열기</button>
+<button class="btn" id="activateBtn">바로 활성화</button>
+<hr class="divider">
+<div class="hint">
+  <b>음성/박수 인식</b>은 별도 앱이 담당합니다.<br>
+  <b>jarvis-listener/install.bat</b> 실행 후<br>
+  "자비스" 발화 또는 박수 2번 →<br>
+  Chrome이 자동으로 최대화됩니다.
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

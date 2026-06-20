@@ -1,0 +1,6 @@
+sounddevice
+numpy
+pystray
+Pillow
+SpeechRecognition
+pyaudio

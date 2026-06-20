@@ -11,15 +11,31 @@ globs:
 
 # AI Model Routing Rules
 
-## 모델 선택 기준
+## 모델 선택 기준 (3-tier)
 
 | 작업 유형 | 모델 | 이유 |
 |---|---|---|
-| 코드 생성·리뷰·분석 | Claude Sonnet | 복잡한 추론, 긴 컨텍스트 |
-| AutoDev 스캐폴딩 | Claude Sonnet | 멀티파일 코드 생성 |
-| 일반 대화 (ChatService) | GPT-4o-mini | 빠르고 저렴 |
-| 브리핑·요약 (BriefingService) | GPT-4o-mini | 경량 포맷팅 |
-| TTS 전처리 | GPT-4o-mini | 텍스트 정리 |
+| 일반 대화 · 도구 호출 (ChatService) | Claude Sonnet 4.6 | AnthropicChatAdapter — 빠르고 균형잡힌 추론, 1M 컨텍스트 |
+| 일반 NEW_PROJECT 스캐폴딩 | Claude Sonnet 4.6 | 멀티파일 코드 생성에 충분한 추론력 |
+| **복잡 NEW_PROJECT** (MSA·풀스택·결제·보안 등) | **Claude Opus 4.8** | 대형 아키텍처 설계 추론력 필요, 비용 정당화됨 |
+| MODIFY_JARVIS · MODIFY_EXTERNAL | Claude Sonnet 4.6 | 기존 코드 편집은 Sonnet으로 충분 |
+| 단순 UI/스타일 수정 | Claude Haiku | 빠르고 저렴, 단순 변경에 충분 |
+
+## DevJobService 모델 자동 선택 (`selectModel`)
+
+`DevJobService.selectModel(command, jobType)` 이 명령 키워드를 분석해 Haiku/Sonnet/Opus를 자동 선택한다.
+
+| 판단 기준 | 선택 모델 |
+|---|---|
+| NEW_PROJECT + `풀스택`, `MSA`, `마이크로서비스`, `결제`, `OAuth`, `플랫폼`, `헥사고날` 등 | **Opus 4.8** |
+| NEW_PROJECT (일반) | Sonnet 4.6 |
+| MODIFY_* + `색상`, `폰트`, `여백`, `배경`, `위치` 등 | Haiku |
+| 그 외 기본값 | Sonnet 4.6 |
+
+모델 ID:
+- Opus: `claude-opus-4-8`
+- Sonnet: `claude-sonnet-4-6`
+- Haiku: `claude-haiku-4-5-20251001`
 
 ## 구현 규칙
 

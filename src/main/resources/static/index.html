@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>대현자 J.A.R.V.I.S.</title>
+<title>자비스 J.A.R.V.I.S.</title>
 <style>
 :root{
   --bg:#000812;--panel:rgba(0,14,28,.92);--border:rgba(0,180,255,.16);
@@ -23,14 +23,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 /* HEADER */
 .hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;height:48px;border-bottom:1px solid var(--border);background:rgba(0,5,12,.96);backdrop-filter:blur(10px);}
-.hdr-l{display:flex;align-items:center;gap:12px;}
-.logo{font-size:17px;font-weight:700;letter-spacing:4px;color:var(--cyan);text-shadow:var(--glow);}
-.logo-sub{font-size:9px;color:var(--dim);letter-spacing:2px;}
-.hdr-clock{font-size:11px;color:var(--dim);letter-spacing:1px;}
-.hdr-r{display:flex;align-items:center;gap:8px;font-size:11px;}
+  padding:0 24px;height:52px;border-bottom:1px solid rgba(0,180,255,.13);
+  background:linear-gradient(180deg,rgba(0,8,20,.98) 0%,rgba(0,5,14,.95) 100%);
+  backdrop-filter:blur(16px);box-shadow:0 1px 0 rgba(0,180,255,.08),0 2px 20px rgba(0,0,0,.4);}
+.hdr-l{display:flex;align-items:center;gap:16px;}
+.logo{font-size:18px;font-weight:700;letter-spacing:5px;color:var(--cyan);text-shadow:var(--glow);
+  background:linear-gradient(135deg,#00d4ff 0%,#0096ff 60%,#00d4ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-size:9px;color:var(--dim);letter-spacing:3px;}
+.hdr-clock{font-size:11px;color:rgba(0,180,255,.5);letter-spacing:2px;font-variant-numeric:tabular-nums;}
+.hdr-r{display:flex;align-items:center;gap:10px;font-size:11px;}
 .sdot{width:8px;height:8px;border-radius:50%;background:var(--dim);transition:all .4s;}
-.slbl{color:var(--dim);letter-spacing:1px;transition:color .4s;}
+.slbl{color:var(--dim);letter-spacing:2px;font-size:9px;text-transform:uppercase;transition:color .4s;}
 
 [data-state=inactive]  .sdot{background:rgba(60,0,90,.85);box-shadow:0 0 4px rgba(60,0,90,.5);animation:blink 7s ease-in-out infinite;}
 [data-state=inactive]  .slbl{color:rgba(100,30,140,.9);}
@@ -51,13 +54,19 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .main{flex:1;display:flex;overflow:hidden;}
 
 /* SIDE PANELS */
-.panel{width:238px;flex-shrink:0;background:var(--panel);display:flex;flex-direction:column;
-  overflow-y:auto;padding:10px;gap:10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
-.pl{border-right:1px solid var(--border);}
-.pr{border-left:1px solid var(--border);}
-.sec{border:1px solid var(--border);border-radius:3px;padding:8px 10px;flex-shrink:0;}
-.stitle{font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;
-  border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:7px;}
+.panel{width:248px;flex-shrink:0;background:linear-gradient(180deg,rgba(0,10,24,.97) 0%,rgba(0,6,18,.95) 100%);
+  display:flex;flex-direction:column;overflow-y:auto;padding:12px;gap:10px;
+  scrollbar-width:thin;scrollbar-color:rgba(0,180,255,.12) transparent;}
+.pl{border-right:1px solid rgba(0,180,255,.1);box-shadow:inset -1px 0 0 rgba(0,180,255,.04);}
+.pr{border-left:1px solid rgba(0,180,255,.1);box-shadow:inset 1px 0 0 rgba(0,180,255,.04);}
+.sec{border:1px solid rgba(0,180,255,.12);border-radius:5px;padding:10px 12px;flex-shrink:0;
+  background:rgba(0,180,255,.02);backdrop-filter:blur(4px);
+  box-shadow:0 1px 0 rgba(0,0,0,.3),inset 0 1px 0 rgba(0,180,255,.06);}
+.stitle{font-size:8px;letter-spacing:3px;color:rgba(0,180,255,.4);text-transform:uppercase;
+  border-bottom:1px solid rgba(0,180,255,.08);padding-bottom:5px;margin-bottom:8px;
+  display:flex;align-items:center;gap:5px;}
+.stitle::before{content:'';display:inline-block;width:3px;height:3px;border-radius:50%;
+  background:rgba(0,212,255,.5);flex-shrink:0;}
 .row{display:flex;justify-content:space-between;align-items:flex-start;font-size:11px;padding:2px 0;color:var(--dim);}
 .ok{color:var(--green)!important;text-shadow:0 0 5px var(--green);}
 .pnote{font-size:9px;color:var(--dim);line-height:1.7;margin-top:3px;}
@@ -86,11 +95,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .mu{align-items:flex-end;}
 .mu .mrole{color:var(--cyan2);}
 .mu .mt{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.22);color:var(--cyan);
-  padding:3px 8px;border-radius:8px 8px 2px 8px;font-size:10px;text-align:right;max-width:210px;
-  white-space:pre-wrap;word-break:keep-all;overflow-wrap:break-word;}
+  padding:5px 9px;border-radius:8px 8px 2px 8px;font-size:11px;text-align:right;max-width:215px;
+  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;line-height:1.6;}
 .ma .mt{background:rgba(0,10,22,.9);border:1px solid var(--border);color:var(--txt);
-  padding:3px 8px;border-radius:8px 8px 8px 2px;font-size:10px;max-width:210px;
-  white-space:pre-wrap;word-break:keep-all;overflow-wrap:break-word;}
+  padding:5px 9px;border-radius:8px 8px 8px 2px;font-size:11px;max-width:215px;
+  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;line-height:1.6;}
 .ms .mt{color:var(--dim);font-size:9px;text-align:center;letter-spacing:1px;width:100%;border:none;background:transparent;}
 
 /* CENTER STAGE — 카드 + ORB 영역 전체 컨테이너 */
@@ -101,7 +110,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .oa::before,.oa::after{content:'';position:absolute;width:72px;height:72px;pointer-events:none;border-color:rgba(0,180,255,.10);border-style:solid;}
 .oa::before{top:14px;left:14px;border-width:1px 0 0 1px;}
 .oa::after{bottom:14px;right:14px;border-width:0 1px 1px 0;}
-.inov{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(0,6,14,.94);backdrop-filter:blur(8px);}
+.inov{position:absolute;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(0,6,14,.94);backdrop-filter:blur(8px);}
 .sbtn{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 46px;
   background:rgba(0,212,255,.03);border:1px solid var(--cyan);color:var(--cyan);font-family:inherit;
   font-size:14px;letter-spacing:3px;cursor:pointer;text-transform:uppercase;
@@ -113,42 +122,76 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .r1{width:390px;height:390px;border-color:rgba(0,212,255,.13);border-style:dashed;animation:spinCW 55s linear infinite;}
 .r2{width:328px;height:328px;border-color:rgba(0,212,255,.10);border-style:dotted;animation:spinCCW 34s linear infinite;}
 .r3{width:268px;height:268px;border-color:rgba(0,212,255,.09);border-style:dashed;animation:spinCW 19s linear infinite;}
+.r4{width:208px;height:208px;border-color:rgba(0,212,255,.18);border-style:solid;animation:spinCCW 8s linear infinite;}
+.r5{width:456px;height:456px;border-color:rgba(0,212,255,.05);border-style:dashed;animation:spinCW 200s linear infinite;}
 @keyframes spinCW{to{transform:rotate(360deg)}}@keyframes spinCCW{to{transform:rotate(-360deg)}}
-[data-state=inactive]  .r1{border-color:rgba(60,0,90,.08);}[data-state=inactive] .r3{border-color:rgba(60,0,90,.06);}
-[data-state=standby]   .r1{border-color:rgba(136,51,255,.17);}[data-state=standby] .r3{border-color:rgba(136,51,255,.11);}
-[data-state=activating].r1{border-color:rgba(255,255,255,.55);animation-duration:3s;}[data-state=activating].r2{border-color:rgba(0,212,255,.75);animation-duration:2s;}[data-state=activating].r3{border-color:rgba(255,255,255,.65);animation-duration:1.5s;}
-[data-state=briefing]  .r1{border-color:rgba(255,208,64,.20);}[data-state=briefing] .r3{border-color:rgba(255,208,64,.20);}
-[data-state=listening] .r1{border-color:rgba(0,255,136,.20);animation-duration:15s;}[data-state=listening] .r3{border-color:rgba(0,255,136,.24);animation-duration:5s;}
-[data-state=processing].r1{border-color:rgba(255,136,0,.26);animation-duration:7s;}[data-state=processing].r3{border-color:rgba(255,136,0,.28);animation-duration:2.2s;}
-[data-state=speaking]  .r1{border-color:rgba(0,212,255,.28);animation-duration:11s;}[data-state=speaking] .r3{border-color:rgba(0,212,255,.32);animation-duration:3.5s;}
+/* Orbital dot arms */
+.orbit-arm{position:absolute;inset:0;pointer-events:none;border-radius:50%;}
+.od1{animation:spinCW 7s linear infinite;}
+.od2{animation:spinCCW 13s linear infinite;}
+.od3{animation:spinCW 4.8s linear infinite;}
+.od1::before,.od2::before,.od3::before,.od1::after,.od2::after{content:'';position:absolute;border-radius:50%;left:50%;transform:translateX(-50%);}
+.od1::before{width:5px;height:5px;top:calc(50% - 193px);background:rgba(0,212,255,.9);box-shadow:0 0 8px 2px rgba(0,212,255,.55);}
+.od1::after{width:3px;height:3px;top:calc(50% + 191px);background:rgba(0,212,255,.4);}
+.od2::before{width:4px;height:4px;top:calc(50% - 162px);background:rgba(0,212,255,.75);box-shadow:0 0 6px rgba(0,212,255,.4);}
+.od2::after{width:3px;height:3px;top:calc(50% + 161px);background:rgba(0,255,136,.45);}
+.od3::before{width:3px;height:3px;top:calc(50% - 132px);background:rgba(0,212,255,.6);box-shadow:0 0 5px rgba(0,212,255,.35);}
+[data-state=inactive]  .r1{border-color:rgba(60,0,90,.08);}[data-state=inactive] .r3{border-color:rgba(60,0,90,.06);}[data-state=inactive] .r4{border-color:rgba(60,0,90,.1);}
+[data-state=inactive]  .od1::before,.od1::after,.od2::before,.od2::after,[data-state=inactive] .od3::before{opacity:.15;}
+[data-state=standby]   .r1{border-color:rgba(136,51,255,.17);}[data-state=standby] .r3{border-color:rgba(136,51,255,.11);}[data-state=standby] .r4{border-color:rgba(136,51,255,.22);}
+[data-state=standby]   .od1::before{background:rgba(136,51,255,.9);box-shadow:0 0 8px 2px rgba(136,51,255,.5);}
+[data-state=activating].r1{border-color:rgba(255,255,255,.55);animation-duration:3s;}[data-state=activating].r2{border-color:rgba(0,212,255,.75);animation-duration:2s;}[data-state=activating].r3{border-color:rgba(255,255,255,.65);animation-duration:1.5s;}[data-state=activating].r4{border-color:rgba(0,212,255,.9);animation-duration:.8s;}
+[data-state=briefing]  .r1{border-color:rgba(255,208,64,.20);}[data-state=briefing] .r3{border-color:rgba(255,208,64,.20);}[data-state=briefing] .r4{border-color:rgba(255,208,64,.28);}
+[data-state=briefing]  .od1::before{background:rgba(255,208,64,.9);box-shadow:0 0 7px rgba(255,208,64,.6);}
+[data-state=listening] .r1{border-color:rgba(0,255,136,.20);animation-duration:15s;}[data-state=listening] .r3{border-color:rgba(0,255,136,.24);animation-duration:5s;}[data-state=listening] .r4{border-color:rgba(0,255,136,.30);animation-duration:3.5s;}
+[data-state=listening] .od1::before{background:rgba(0,255,136,.9);box-shadow:0 0 8px 2px rgba(0,255,136,.5);}
+[data-state=processing].r1{border-color:rgba(255,136,0,.26);animation-duration:7s;}[data-state=processing].r3{border-color:rgba(255,136,0,.28);animation-duration:2.2s;}[data-state=processing].r4{border-color:rgba(255,136,0,.38);animation-duration:1.2s;}
+[data-state=processing].od1::before{background:rgba(255,136,0,.9);box-shadow:0 0 8px 2px rgba(255,136,0,.5);}
+[data-state=speaking]  .r1{border-color:rgba(0,212,255,.28);animation-duration:11s;}[data-state=speaking] .r3{border-color:rgba(0,212,255,.32);animation-duration:3.5s;}[data-state=speaking] .r4{border-color:rgba(0,212,255,.42);animation-duration:2.2s;}
 .mc{position:absolute;width:100%;height:100%;animation:spinCW 90s linear infinite;opacity:.75;}
 .orb{position:relative;z-index:10;width:162px;height:162px;border-radius:50%;
-  background:radial-gradient(circle at 37% 34%,rgba(0,212,255,.32),rgba(0,28,56,.88) 56%,rgba(0,6,14,.98));
-  box-shadow:0 0 55px rgba(0,212,255,.12),0 0 110px rgba(0,212,255,.05),inset 0 0 55px rgba(0,212,255,.04);
+  background:radial-gradient(circle at 37% 34%,rgba(0,212,255,.38),rgba(0,28,56,.88) 52%,rgba(0,6,14,.98));
+  box-shadow:0 0 55px rgba(0,212,255,.16),0 0 100px rgba(0,212,255,.07),0 0 180px rgba(0,212,255,.03),inset 0 0 55px rgba(0,212,255,.06),inset 0 0 20px rgba(0,212,255,.08);
   display:flex;align-items:center;justify-content:center;transition:box-shadow .5s,background .5s;}
 .orbin{width:90px;height:90px;border-radius:50%;
-  background:radial-gradient(circle at 40% 37%,rgba(0,212,255,.52),rgba(0,55,110,.28) 56%,transparent);
+  background:radial-gradient(circle at 40% 37%,rgba(0,212,255,.58),rgba(0,55,110,.28) 52%,transparent);
   animation:opulse 3.2s ease-in-out infinite;}
-.orbring{position:absolute;width:100%;height:100%;border-radius:50%;border:1px solid rgba(0,212,255,.25);animation:oexpand 3.2s ease-out infinite;}
+.orbring{position:absolute;width:100%;height:100%;border-radius:50%;border:1px solid rgba(0,212,255,.28);animation:oexpand 3.2s ease-out infinite;}
+.orbring2{position:absolute;width:100%;height:100%;border-radius:50%;border:1px solid rgba(0,212,255,.16);animation:oexpand 3.2s ease-out infinite;animation-delay:1.6s;}
+.orbring3{position:absolute;width:100%;height:100%;border-radius:50%;animation:opulse3 4.8s ease-in-out infinite;}
 @keyframes opulse{0%,100%{opacity:.45;transform:scale(.87);}50%{opacity:1;transform:scale(1.1);}}
-@keyframes oexpand{0%{transform:scale(1);opacity:.38;}100%{transform:scale(1.95);opacity:0;}}
+@keyframes oexpand{0%{transform:scale(1);opacity:.42;}100%{transform:scale(2.1);opacity:0;}}
+@keyframes opulse3{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.22);}50%{box-shadow:0 0 0 18px rgba(0,212,255,0);}}
 [data-state=inactive] .orb{background:radial-gradient(circle at 37% 34%,rgba(40,0,70,.18),rgba(0,6,14,.99) 75%);box-shadow:0 0 16px rgba(40,0,70,.06);}
 [data-state=inactive] .orbin{background:radial-gradient(circle at 40% 37%,rgba(70,0,100,.28),transparent);animation-duration:9s;}
-[data-state=inactive] .orbring{border-color:rgba(70,0,100,.08);animation-duration:9s;}
-[data-state=standby] .orb{background:radial-gradient(circle at 37% 34%,rgba(100,35,200,.26),rgba(0,6,14,.98) 68%);box-shadow:0 0 32px rgba(100,35,200,.1);}
-[data-state=standby] .orbin{background:radial-gradient(circle at 40% 37%,rgba(130,55,255,.48),transparent);animation-duration:5s;}
-[data-state=standby] .orbring{border-color:rgba(130,55,255,.18);animation-duration:5s;}
-[data-state=activating] .orb{background:radial-gradient(circle at 37% 34%,rgba(255,255,255,.78),rgba(0,212,255,.52) 34%,rgba(0,25,50,.45));box-shadow:0 0 88px rgba(0,212,255,.82),0 0 180px rgba(0,212,255,.36),inset 0 0 66px rgba(255,255,255,.28);animation:orbActivate .55s ease-out;}
-[data-state=activating] .orbin{animation-duration:.38s;}[data-state=activating] .orbring{border-color:rgba(0,212,255,.85);animation-duration:.38s;}
-@keyframes orbActivate{0%{transform:scale(.65);}60%{transform:scale(1.18);}100%{transform:scale(1);}}
-[data-state=briefing] .orb{background:radial-gradient(circle at 37% 34%,rgba(255,208,64,.44),rgba(78,38,0,.72) 56%,rgba(0,6,14,.95));box-shadow:0 0 55px rgba(255,208,64,.24);}
-[data-state=briefing] .orbin{background:radial-gradient(circle at 40% 37%,rgba(255,208,64,.65),transparent);animation-duration:2.2s;}[data-state=briefing] .orbring{border-color:rgba(255,208,64,.32);animation-duration:2.2s;}
-[data-state=listening] .orb{background:radial-gradient(circle at 37% 34%,rgba(0,255,136,.44),rgba(0,46,22,.72) 56%,rgba(0,6,14,.95));box-shadow:0 0 58px rgba(0,255,136,.26);}
-[data-state=listening] .orbin{background:radial-gradient(circle at 40% 37%,rgba(0,255,136,.65),transparent);animation-duration:1.4s;}[data-state=listening] .orbring{border-color:rgba(0,255,136,.38);animation-duration:1.4s;}
-[data-state=processing] .orb{background:radial-gradient(circle at 37% 34%,rgba(255,136,0,.44),rgba(78,34,0,.72) 56%,rgba(0,6,14,.95));box-shadow:0 0 58px rgba(255,136,0,.26);}
-[data-state=processing] .orbin{animation-duration:.72s;}[data-state=processing] .orbring{border-color:rgba(255,136,0,.4);animation-duration:.72s;}
-[data-state=speaking] .orb{background:radial-gradient(circle at 37% 34%,rgba(0,212,255,.54),rgba(0,46,76,.66) 56%,rgba(0,6,14,.95));box-shadow:0 0 68px rgba(0,212,255,.44),0 0 140px rgba(0,212,255,.18),inset 0 0 58px rgba(0,212,255,.18);}
-[data-state=speaking] .orbin{animation-duration:.88s;}[data-state=speaking] .orbring{border-color:rgba(0,212,255,.55);animation-duration:.88s;}
+[data-state=inactive] .orbring{border-color:rgba(70,0,100,.08);animation-duration:9s;}[data-state=inactive] .orbring2{border-color:rgba(70,0,100,.05);animation-duration:9s;}
+[data-state=standby] .orb{background:radial-gradient(circle at 37% 34%,rgba(100,35,200,.32),rgba(0,6,14,.97) 66%);box-shadow:0 0 42px rgba(100,35,200,.14),0 0 80px rgba(100,35,200,.06);}
+[data-state=standby] .orbin{background:radial-gradient(circle at 40% 37%,rgba(130,55,255,.52),transparent);animation-duration:5s;}
+[data-state=standby] .orbring{border-color:rgba(130,55,255,.22);animation-duration:5s;}[data-state=standby] .orbring2{border-color:rgba(130,55,255,.12);animation-duration:5s;}
+[data-state=standby] .orbring3{animation-name:opulse3-purple;}
+@keyframes opulse3-purple{0%,100%{box-shadow:0 0 0 0 rgba(130,55,255,.2);}50%{box-shadow:0 0 0 18px rgba(130,55,255,0);}}
+[data-state=activating] .orb{background:radial-gradient(circle at 37% 34%,rgba(255,255,255,.82),rgba(0,212,255,.56) 32%,rgba(0,25,50,.44));box-shadow:0 0 100px rgba(0,212,255,.9),0 0 200px rgba(0,212,255,.4),inset 0 0 70px rgba(255,255,255,.32);animation:orbActivate .55s ease-out;}
+[data-state=activating] .orbin{animation-duration:.38s;}
+[data-state=activating] .orbring{border-color:rgba(0,212,255,.9);animation-duration:.38s;}[data-state=activating] .orbring2{border-color:rgba(0,212,255,.6);animation-duration:.55s;}
+@keyframes orbActivate{0%{transform:scale(.6);}55%{transform:scale(1.2);}100%{transform:scale(1);}}
+[data-state=briefing] .orb{background:radial-gradient(circle at 37% 34%,rgba(255,208,64,.48),rgba(78,38,0,.72) 54%,rgba(0,6,14,.95));box-shadow:0 0 62px rgba(255,208,64,.28),0 0 120px rgba(255,208,64,.1);}
+[data-state=briefing] .orbin{background:radial-gradient(circle at 40% 37%,rgba(255,208,64,.7),transparent);animation-duration:2.2s;}
+[data-state=briefing] .orbring{border-color:rgba(255,208,64,.36);animation-duration:2.2s;}[data-state=briefing] .orbring2{border-color:rgba(255,208,64,.18);animation-duration:2.2s;}
+[data-state=briefing] .orbring3{animation-name:opulse3-gold;}
+@keyframes opulse3-gold{0%,100%{box-shadow:0 0 0 0 rgba(255,208,64,.2);}50%{box-shadow:0 0 0 16px rgba(255,208,64,0);}}
+[data-state=listening] .orb{background:radial-gradient(circle at 37% 34%,rgba(0,255,136,.48),rgba(0,46,22,.72) 54%,rgba(0,6,14,.95));box-shadow:0 0 65px rgba(0,255,136,.3),0 0 130px rgba(0,255,136,.1);}
+[data-state=listening] .orbin{background:radial-gradient(circle at 40% 37%,rgba(0,255,136,.7),transparent);animation-duration:1.4s;}
+[data-state=listening] .orbring{border-color:rgba(0,255,136,.42);animation-duration:1.4s;}[data-state=listening] .orbring2{border-color:rgba(0,255,136,.22);animation-duration:1.8s;}
+[data-state=listening] .orbring3{animation-name:opulse3-green;}
+@keyframes opulse3-green{0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,.25);}50%{box-shadow:0 0 0 20px rgba(0,255,136,0);}}
+[data-state=processing] .orb{background:radial-gradient(circle at 37% 34%,rgba(255,136,0,.48),rgba(78,34,0,.72) 54%,rgba(0,6,14,.95));box-shadow:0 0 65px rgba(255,136,0,.3),0 0 130px rgba(255,136,0,.1);}
+[data-state=processing] .orbin{animation-duration:.72s;}
+[data-state=processing] .orbring{border-color:rgba(255,136,0,.44);animation-duration:.72s;}[data-state=processing] .orbring2{border-color:rgba(255,136,0,.22);animation-duration:.9s;}
+[data-state=speaking] .orb{background:radial-gradient(circle at 37% 34%,rgba(0,212,255,.6),rgba(0,46,76,.64) 54%,rgba(0,6,14,.95));box-shadow:0 0 76px rgba(0,212,255,.5),0 0 150px rgba(0,212,255,.2),inset 0 0 60px rgba(0,212,255,.22);}
+[data-state=speaking] .orbin{animation-duration:.88s;}
+[data-state=speaking] .orbring{border-color:rgba(0,212,255,.6);animation-duration:.88s;}[data-state=speaking] .orbring2{border-color:rgba(0,212,255,.3);animation-duration:1.1s;}
+[data-state=speaking] .orbring3{animation-name:opulse3-speaking;}
+@keyframes opulse3-speaking{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.3);}50%{box-shadow:0 0 0 22px rgba(0,212,255,0);}}
 /* 상태 텍스트 — .oa 안 absolute, orb 아래 중앙 고정 */
 .olbl{position:absolute;left:50%;top:calc(50% + 168px);transform:translateX(-50%);z-index:320;
   pointer-events:none;text-align:center;font-size:11px;letter-spacing:3px;color:var(--dim);
@@ -213,25 +256,52 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 /* CARDS SECTION — .center-stage 기준 absolute (oa 밖) */
 .cards-section{display:none;position:absolute;top:10px;left:50%;transform:translateX(-50%);
-  width:min(92%,780px);z-index:250;padding:0 8px;
+  width:min(96%,900px);z-index:250;padding:0 8px;
   overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
-.cards-row{display:flex;gap:8px;min-width:min-content;align-items:flex-start;justify-content:center;flex-wrap:nowrap;}
-.card{flex-shrink:0;width:170px;padding:7px 10px;border-radius:3px;cursor:pointer;transition:all .2s;position:relative;}
-.card:hover{transform:translateY(-1px);}
-.card-todo{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.22);}
-.card-todo.card-done{background:rgba(0,255,136,.03);border-color:rgba(0,255,136,.15);opacity:.55;}
-.card-memo{background:rgba(255,208,64,.05);border:1px solid rgba(255,208,64,.22);}
-.card-type{font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:3px;}
-.card-title{font-size:10px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cards-row{display:flex;gap:10px;min-width:min-content;align-items:flex-start;justify-content:center;flex-wrap:nowrap;}
+.card{flex-shrink:0;width:200px;min-height:78px;padding:10px 12px 10px;border-radius:5px;cursor:pointer;
+  transition:all .25s;position:relative;backdrop-filter:blur(6px);}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.35);}
+.card-todo{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.25);
+  box-shadow:0 0 0 1px rgba(0,212,255,.04) inset;}
+.card-todo:hover{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.4);}
+.card-todo.card-done{background:rgba(0,255,136,.04);border-color:rgba(0,255,136,.18);opacity:.6;}
+.card-memo{background:rgba(255,208,64,.05);border:1px solid rgba(255,208,64,.24);
+  box-shadow:0 0 0 1px rgba(255,208,64,.04) inset;}
+.card-memo:hover{background:rgba(255,208,64,.1);border-color:rgba(255,208,64,.42);}
+.card-type{font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+.card-title{font-size:11px;font-weight:bold;line-height:1.35;word-break:break-word;overflow-wrap:anywhere;margin-bottom:4px;}
 .card-todo .card-title{color:var(--cyan);}
 .card-todo.card-done .card-title{color:var(--dim);text-decoration:line-through;}
 .card-memo .card-title{color:var(--gold);}
-.card-sub{font-size:9px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.card-del{position:absolute;top:3px;right:5px;font-size:9px;color:var(--dim);cursor:pointer;opacity:0;transition:opacity .2s;background:none;border:none;padding:0;}
-.card:hover .card-del{opacity:.7;}
-.cards-add-btn{flex-shrink:0;width:32px;height:54px;background:transparent;border:1px dashed var(--border);
-  color:var(--dim);font-size:18px;cursor:pointer;border-radius:3px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.card-body{font-size:9.5px;color:rgba(158,216,240,.65);line-height:1.55;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  word-break:break-word;margin-top:2px;}
+.card-sub{font-size:9px;color:var(--dim);margin-top:5px;display:flex;align-items:center;gap:4px;}
+.card-del{position:absolute;top:5px;right:7px;font-size:10px;color:var(--dim);cursor:pointer;opacity:0;
+  transition:opacity .2s;background:none;border:none;padding:2px 4px;}
+.card:hover .card-del{opacity:.6;}
+.cards-add-btn{flex-shrink:0;width:36px;height:78px;background:transparent;border:1px dashed rgba(0,180,255,.2);
+  color:var(--dim);font-size:20px;cursor:pointer;border-radius:5px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
 .cards-add-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+/* 카드 상세 모달 */
+.card-detail-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);align-items:center;justify-content:center;}
+.card-detail-overlay.show{display:flex;}
+.card-detail-box{background:rgba(0,6,16,.97);border:1px solid var(--cyan);min-width:320px;max-width:480px;width:90%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 0 50px rgba(0,212,255,.15);}
+.cd-head{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid var(--border);}
+.cd-type{font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:3px;}
+.cd-title{font-size:14px;font-weight:bold;line-height:1.35;word-break:break-word;}
+.cd-close{background:none;border:none;color:var(--dim);font-size:16px;cursor:pointer;padding:2px 6px;transition:color .2s;flex-shrink:0;margin-left:12px;}
+.cd-close:hover{color:var(--cyan);}
+.cd-body{padding:14px 18px;overflow-y:auto;flex:1;font-size:11px;color:var(--txt);line-height:1.7;white-space:pre-wrap;word-break:break-word;}
+.cd-body:empty::before{content:'내용 없음';color:var(--dim);font-style:italic;}
+.cd-foot{padding:10px 18px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.cd-meta{font-size:9px;color:var(--dim);flex:1;}
+.cd-btn{padding:5px 14px;font-family:inherit;font-size:9px;letter-spacing:2px;cursor:pointer;border-radius:2px;text-transform:uppercase;border:1px solid;transition:all .2s;}
+.cd-btn-toggle{color:var(--green);border-color:rgba(0,255,136,.4);background:rgba(0,255,136,.05);}
+.cd-btn-toggle:hover{background:rgba(0,255,136,.15);}
+.cd-btn-del{color:var(--red);border-color:rgba(255,51,51,.4);background:transparent;}
+.cd-btn-del:hover{background:rgba(255,51,51,.1);}
 /* ADD MODAL */
 .add-modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
 .add-modal.show{display:flex;}
@@ -298,6 +368,32 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 /* 자막 CSS 교정 — 공백/띄어쓰기 보존 */
 .jl{white-space:pre-wrap;word-break:keep-all;overflow-wrap:break-word;overflow:hidden;}
+
+/* JOB LIST MODAL */
+.job-list-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:900;align-items:center;justify-content:center;}
+.job-list-modal.show{display:flex;}
+.job-list-box{width:min(700px,96vw);max-height:80vh;display:flex;flex-direction:column;background:var(--bg);border:1px solid rgba(0,212,255,.4);border-radius:4px;}
+.job-list-head{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.job-list-head h2{font-size:13px;letter-spacing:4px;color:var(--cyan);text-shadow:var(--glow);margin:0;}
+.job-list-content{flex:1;overflow-y:auto;padding:6px 10px;}
+.job-item{display:flex;align-items:center;justify-content:space-between;padding:7px 6px;border-bottom:1px solid rgba(0,212,255,.08);gap:8px;}
+.job-item:last-child{border-bottom:none;}
+.job-item-left{flex:1;min-width:0;}
+.job-item-id{font-size:9px;color:var(--cyan);letter-spacing:1px;margin-bottom:2px;}
+.job-item-type{color:var(--dim);font-size:8px;margin-left:6px;letter-spacing:.5px;}
+.job-item-cmd{font-size:9px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;margin-bottom:3px;}
+.job-item-status{display:inline-block;font-size:8px;letter-spacing:1px;padding:1px 5px;border-radius:2px;}
+.job-item-status.run{color:var(--orange);border:1px solid rgba(255,136,0,.4);}
+.job-item-status.ok{color:var(--green);border:1px solid rgba(0,255,136,.4);}
+.job-item-status.err{color:var(--red);border:1px solid rgba(255,51,51,.4);}
+.job-item-status.cancel{color:var(--dim);border:1px solid var(--border);}
+.job-item-status.queue{color:var(--cyan);border:1px solid rgba(0,212,255,.4);}
+.job-item-actions{display:flex;gap:5px;flex-shrink:0;align-items:center;}
+.job-act-btn{padding:3px 9px;font-family:inherit;font-size:8px;letter-spacing:1px;cursor:pointer;border-radius:2px;border:1px solid var(--border);background:transparent;color:var(--dim);transition:all .2s;white-space:nowrap;}
+.job-act-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+.job-act-btn.danger{color:var(--red);border-color:rgba(255,51,51,.4);}
+.job-act-btn.danger:hover{background:rgba(255,51,51,.1);border-color:var(--red);}
+.job-list-empty{text-align:center;color:var(--dim);font-size:10px;padding:24px;}
 </style>
 </head>
 <body data-state="init">
@@ -306,7 +402,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 <header class="hdr">
   <div class="hdr-l">
     <span class="logo">J.A.R.V.I.S.</span>
-    <span class="logo-sub">대현자 프로토콜 v5.0</span>
+    <span class="logo-sub">자비스 프로토콜 v5.0</span>
   </div>
   <div class="hdr-clock" id="clock"></div>
   <div class="hdr-r">
@@ -341,6 +437,19 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="add-btns">
       <button class="add-btn add-btn-cancel" onclick="closeAddModal()">취소</button>
       <button class="add-btn add-btn-ok" onclick="submitAddModal()">등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- JOB LIST MODAL -->
+<div class="job-list-modal" id="jobListModal">
+  <div class="job-list-box">
+    <div class="job-list-head">
+      <h2>JOB LIST</h2>
+      <button class="dev-mini-btn" onclick="closeJobListModal()">닫기</button>
+    </div>
+    <div id="jobListContent" class="job-list-content">
+      <div class="job-list-empty">실행된 Job이 없습니다.</div>
     </div>
   </div>
 </div>
@@ -384,7 +493,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="sec">
       <div class="stitle">AUDIO LEVEL</div>
       <div class="mwrap"><div class="mbar" id="mbar"></div></div>
-      <div class="pnote">박수(Clap) 또는 "대현자야"로 활성화<br>[Space] 수동 활성화</div>
+      <div class="pnote">박수(Clap) 또는 "자비스야"로 활성화<br>[Space] 수동 활성화</div>
     </div>
     <div class="sec">
       <div class="stitle">TTS ENGINE</div>
@@ -400,9 +509,24 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     </div>
     <div class="sec">
       <div class="stitle">CONTROLS</div>
-      <div class="pnote">● 활성화: 박수 / "대현자야"<br>● 종료: "종료" / "고마워" / "그만"<br>● [Space]: 수동 활성화/종료<br>● 60초 침묵 → 대기 모드 (STANDBY)<br>● 명시 종료 → 비활성화 (INACTIVE)</div>
+      <div class="pnote">● 활성화: 박수(강) / "자비스야"<br>● 대기중: "자비스야"로만 재개<br>● 응답중: "자비스야" → 인터셉트<br>● 종료: "종료" / "고마워" / "그만"<br>● [Space]: 수동 활성화/종료<br>● 60초 침묵 → 대기 모드 (STANDBY)<br>● 명시 종료 → 비활성화 (INACTIVE)</div>
     </div>
   </aside>
+
+  <!-- 카드 상세 모달 -->
+  <div class="card-detail-overlay" id="cardDetailOverlay" onclick="if(event.target===this)closeCardDetail()">
+    <div class="card-detail-box">
+      <div class="cd-head">
+        <div>
+          <div class="cd-type" id="cdType"></div>
+          <div class="cd-title" id="cdTitle"></div>
+        </div>
+        <button class="cd-close" onclick="closeCardDetail()">✕</button>
+      </div>
+      <div class="cd-body" id="cdBody"></div>
+      <div class="cd-foot" id="cdFoot"></div>
+    </div>
+  </div>
 
   <!-- CENTER STAGE — cards + orb 영역 -->
   <div class="center-stage">
@@ -417,14 +541,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="oa">
       <div class="inov" id="inov">
         <button class="sbtn" id="sbtn">
-          <span>대현자 시스템 가동</span>
+          <span>자비스 시스템 가동</span>
           <span class="ssub">클릭하여 마이크 권한 허용</span>
         </button>
       </div>
       <div class="owrap">
+        <div class="ring r5"></div>
         <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+        <div class="ring r4"></div>
+        <div class="orbit-arm od1"></div><div class="orbit-arm od2"></div><div class="orbit-arm od3"></div>
         <svg class="mc" id="mc" viewBox="0 0 420 420"></svg>
-        <div class="orb" id="orb"><div class="orbin"></div><div class="orbring"></div></div>
+        <div class="orb" id="orb"><div class="orbin"></div><div class="orbring"></div><div class="orbring2"></div><div class="orbring3"></div></div>
       </div>
       <div class="olbl" id="olbl">대기 중</div>
       <div class="hud">
@@ -459,7 +586,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
         <div class="dev-sum-row"><span>유형</span><span class="dev-sum-val" id="sumType">—</span></div>
         <div class="dev-sum-row" id="sumFolderRow" style="display:none"><span>폴더</span><span class="dev-sum-val" id="sumFolder" style="font-size:8px">—</span></div>
       </div>
-      <button class="dev-open-btn" onclick="openDevModal()">📋 DEV 로그 열기</button>
+      <button class="dev-open-btn" onclick="openJobListModal()">📋 JOB 리스트 보기</button>
       <!-- 완료 리포트 -->
       <div id="devReport" style="margin-top:6px;"></div>
     </div>
@@ -491,33 +618,45 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════════
 const ST = {INIT:'init',INACTIVE:'inactive',STANDBY:'standby',ACTIVATING:'activating',
-  BRIEFING:'briefing',LISTENING:'listening',PROCESSING:'processing',SPEAKING:'speaking'};
+  BRIEFING:'briefing',LISTENING:'listening',PROCESSING:'processing',SPEAKING:'speaking',
+  INTERCEPT:'intercept'};
 
 // Wake word — rolling buffer + multiple phonetic variants
 const WAKE_PATS = [
-  /대현자야/, /대\s*현\s*자\s*야/, /대현자아/, /대\s*현\s*자/,
-  /자비스야/, /자비스아/, /대현자/
+  /자비스야/, /자비스아/, /자\s*비\s*스\s*야/, /자비스/,
+  /jarvis/i
 ];
 const WAKE_BUF_LIMIT = 60;
 
-const EXIT_WORDS = ['종료','고마워','그만','꺼줘','닫아'];
+const EXIT_WORDS    = ['종료','고마워','그만','꺼줘','닫아'];
+const STANDBY_WORDS = ['대기해','대기해줘','대기모드','대기해주세요'];
 const SILENCE_MS       = 60_000;  // 60초 침묵 → 대기중 (STANDBY) 전환
 const SPEECH_GAP_MS    =  8_000;  // 마지막 음성 후 8초 내면 아직 말하는 중으로 판단 (긴 요청 보호)
 
-// Clap detection thresholds
-const CLAP_HI = 0.55;
-const CLAP_LO = 0.07;
+// Clap detection thresholds — higher CLAP_HI requires a real clap (not phone/desk noise)
+const CLAP_HI = 0.72;
+const CLAP_LO = 0.06;
+const CLAP_COOLDOWN_MS = 2000;  // 최소 2초 간격 (연속 오발동 방지)
+let lastClapTime = 0;
 
 // Code-gen trigger patterns
-// 포함 패턴: ~~개발해줘 / ~~구현해줘 / ~~만들어줘 / ~~생성해줘 + 코드 관련
+// 포함 패턴: ~~개발해줘 / ~~구현해줘 / ~~만들어줘 / ~~생성해줘 / ~~수정해줘 + 코드 관련
 const CODE_GEN_PATS = [
   /개발\s*(?:해줘|해주세요|해봐|해줘요)/,
   /코드\s*(?:구현|작성|만들어|추가)\s*(?:해줘|해주세요|해봐)/,
   /구현\s*(?:해줘|해주세요|해봐|해줘요)/,
   /(?:기능|서비스|페이지|화면|앱)\s*(?:개발|구현)\s*(?:해줘|해주세요|해봐)/,
-  // 신규: ~~만들어줘 / ~~생성해줘 (회원가입 API, 크롬 확장, Kafka Consumer 등)
   /만들어\s*(?:줘|주세요|봐|줘요)/,
   /생성\s*(?:해줘|해주세요|해봐|해줘요)/,
+  // 새로운/다른 프로젝트 명시 요청
+  /(?:새로운|다른|새|신규)\s*(?:프로젝트|앱|웹|게임|프로그램)/,
+  /(?:새|다른)\s*(?:것|거)\s*(?:만들|개발|생성)/,
+  // 코드/프로젝트 수정·추가 명령 (자비스 또는 외부 프로젝트 모두 포함)
+  /(?:자비스|이\s*시스템|이\s*프로젝트|현재\s*프로젝트).*(?:수정|변경|고쳐|추가|개선)/,
+  /방금.*만든.*(?:수정|변경|고쳐|추가)/,
+  /(?:그|해당)\s*(?:프로젝트|게임|웹|앱|사이트|확장).*(?:수정|변경|고쳐|추가)/,
+  /(?:게임|웹\s*앱|크롬\s*확장|확장\s*프로그램).*(?:수정|변경|고쳐|추가)\s*(?:해줘|해주세요|해봐)?/,
+  /(?:기능|버튼|배경|색상|레이아웃|스타일)\s*(?:추가|변경|수정|고쳐)\s*(?:해줘|해주세요|해봐|해줘요)/,
 ];
 
 // Todo/Memo 직접 등록 패턴
@@ -556,6 +695,8 @@ let activeJobId = null;
 let _activeJobType        = null;
 let _activeWorkspacePath  = null;
 let _activeProjectType    = null;
+let viewingJobId = null;         // job list modal에서 로그를 보고 있는 jobId
+const jobStore = new Map();      // jobId -> { id, command, status, jobType, projectType, workspace, logs, elapsed }
 // ── 브리핑/TTS 중 STT 처리 잠금 플래그 ───────────────
 let isBriefing        = false;  // 브리핑 진행 중 (TTS 포함)
 let ignoreSpeechInput = false;  // TTS 종료 직후 버퍼 플러시 대기 중
@@ -586,7 +727,7 @@ function domMeasure(s) {
 document.addEventListener('DOMContentLoaded', () => {
   drawMC();
   tickClock(); setInterval(tickClock, 1000);
-  document.getElementById('sbtn').onclick = boot;
+  boot(); // 페이지 로드 즉시 자동 시작 — 클릭 불필요, 마이크 권한은 Chrome 팝업으로 처리
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && e.target === document.body) {
       e.preventDefault();
@@ -617,22 +758,49 @@ function tickClock() {
 // ═══════════════════════════════════════════════════════════
 async function boot() {
   document.getElementById('inov').style.display = 'none';
-  setFt('마이크 초기화 중...');
+  setFt('초기화 중...');
+
+  // 마이크 권한과 무관하게 즉시 초기화 (TTS·briefing은 마이크 불필요)
+  convId = await createConv();
+  document.getElementById('cid').textContent = convId;
+  document.getElementById('sessec').style.display = '';
+  setOnline('ast');
+  loadCards();
+  loadJobHistory();
+  subscribeCardEvents();
+  setState(ST.INACTIVE);
+  setFt('준비 완료 — 박수(강) 또는 "자비스야" / [Space]로 활성화');
+
+  // 마이크 초기화 — 비동기로 진행 (페이지 로드·자동활성화를 막지 않음)
+  initMicAsync();
+
+  // ?activate=1: 마이크 권한 없이도 즉시 활성화 (TTS 브리핑 시작)
+  if (new URLSearchParams(location.search).get('activate') === '1') {
+    await delay(400);
+    activate();
+  }
+}
+
+async function initMicAsync() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
     setupAudio(stream);
     setupRecog();
-    convId = await createConv();
-    document.getElementById('cid').textContent = convId;
-    document.getElementById('sessec').style.display = '';
-    setOnline('vst'); setOnline('ast');
-    loadCards();
-    setState(ST.INACTIVE);
-    setFt('준비 완료 — 박수 또는 "대현자야" / [Space]로 활성화');
+    setOnline('vst');
   } catch(e) {
-    document.getElementById('inov').style.display = '';
-    setFt('오류: ' + e.message);
+    console.warn('[Mic] 권한 없음:', e.message);
+    // 마이크 없어도 TTS는 정상 동작 — 음성 인식만 비활성화
   }
+}
+
+function subscribeCardEvents() {
+  const es = new EventSource('/api/card-events');
+  es.addEventListener('card-update', () => { loadCards(); });
+  es.addEventListener('wake', () => { window.focus(); activate(); });
+  es.onerror = () => {
+    es.close();
+    setTimeout(subscribeCardEvents, 8000);
+  };
 }
 
 function setOnline(id) {
@@ -659,9 +827,13 @@ function rafLoop() {
   for (let i = 0; i < tdbuf.length; i++) { const a = Math.abs(tdbuf[i]); if (a > peak) peak = a; }
   document.getElementById('mbar').style.width = (peak * 100).toFixed(1) + '%';
 
-  // Clap detection: rapid jump from quiet → loud (INACTIVE·STANDBY=활성화 / SPEAKING·BRIEFING=인터럽트)
-  const clapable = appSt === ST.INACTIVE || appSt === ST.STANDBY || appSt === ST.SPEAKING || appSt === ST.BRIEFING;
-  if (clapable && prevAmp < CLAP_LO && peak > CLAP_HI) activate();
+  // Clap detection: INACTIVE 전용 — 박수로만 비활성화에서 깨우기 (STANDBY·SPEAKING은 자비스 워드만 반응)
+  const clapable = appSt === ST.INACTIVE;
+  const now = Date.now();
+  if (clapable && prevAmp < CLAP_LO && peak > CLAP_HI && (now - lastClapTime) > CLAP_COOLDOWN_MS) {
+    lastClapTime = now;
+    activate();
+  }
   prevAmp = peak * 0.22 + prevAmp * 0.78;
 
   if (appSt === ST.LISTENING || appSt === ST.SPEAKING) {
@@ -794,7 +966,7 @@ function setupRecog() {
       if (appSt === ST.LISTENING) resetSil();
     }
 
-    // INACTIVE + STANDBY + SPEAKING + BRIEFING 상태에서 웨이크워드 감지 → 인터럽트 or 활성화
+    // INACTIVE·STANDBY: 자비스 워드 → 활성화 / SPEAKING·BRIEFING: 자비스 워드 → 인터셉트
     if (appSt === ST.INACTIVE || appSt === ST.STANDBY || appSt === ST.SPEAKING || appSt === ST.BRIEFING) {
       // 1) Check each alternative + interim individually
       for (const t of [...allFinals, interim].filter(Boolean)) {
@@ -812,7 +984,8 @@ function setupRecog() {
       if (appSt !== ST.LISTENING) return;
     }
 
-    if (appSt === ST.LISTENING) {
+    if (appSt === ST.LISTENING || appSt === ST.INTERCEPT) {
+      if (appSt === ST.INTERCEPT) { setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); }
       if (interim) setUserDisplay(interim, true);
       if (finalText.trim() && !isHandling) {
         resetSil(); handleInput(finalText.trim());
@@ -832,7 +1005,14 @@ function setUserDisplay(text, isInterim) {
   const d = text.length > MAX ? '··· ' + text.slice(-(MAX-4)) : text;
   document.getElementById('trUser').textContent = d + (isInterim ? ' ···' : '');
 }
-function startRecog() { recogOn=true; try{recog?.start();}catch(_){} }
+function startRecog() {
+  if (!recog) {
+    // 마이크 초기화 안됐으면 권한 요청 후 재시도
+    initMicAsync().then(() => { if (recog) { recogOn=true; try{recog.start();}catch(_){} } });
+    return;
+  }
+  recogOn=true; try{recog.start();}catch(_){}
+}
 function stopRecog()  { recogOn=false; try{recog?.stop();}catch(_){} }
 
 // ═══════════════════════════════════════════════════════════
@@ -852,19 +1032,20 @@ async function activate() {
   wakeBuffer = '';
 
   if (interruptable) {
-    // ── 인터럽트 프로토콜 ──────────────────────────────
+    // ── 인터셉트 프로토콜 (응답 중 자비스 워드 감지) ──────────────
     isHandling = false;
     isBriefing = false;
     ignoreSpeechInput = false;
-    console.log('[VoiceState] interrupt — briefing/ignore flags cleared');
+    console.log('[VoiceState] intercept — briefing/ignore flags cleared');
     typingStop = true;
     stopAudio();
     clearLines();
     document.getElementById('stopbtn').style.display = '';
-    setState(ST.LISTENING);
-    setFt('세션 활성 — 말씀하세요');
+    setState(ST.INTERCEPT);
+    setFt('인터셉트 감지 — 청취 중...');
     resetSil();
     startRecog();
+    setTimeout(() => { if (appSt === ST.INTERCEPT) { setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); } }, 1200);
     return;
   }
 
@@ -891,7 +1072,7 @@ async function activate() {
   console.log('[VoiceState] briefing started — STT input locked');
   await delay(320);
   console.log('[VoiceState] listening stopped for TTS (activation greeting)');
-  await speakTTS('네, 현진님. 대현자의 프로토콜을 개시합니다.');
+  await speakTTS('네, 현진님. 자비스 프로토콜을 개시합니다.');
   setState(ST.BRIEFING);
   console.log('[VoiceState] listening stopped for TTS (daily briefing)');
   await doBriefing();
@@ -902,7 +1083,7 @@ async function activate() {
   resetSil();
   setFt('세션 활성 — 말씀하세요');
   // STT 버퍼 완전 플러시를 위한 대기 후 잠금 해제 + 청취 시작
-  await delay(700);
+  await delay(1500);
   ignoreSpeechInput = false;
   console.log('[VoiceState] listening started — STT input unlocked');
   startRecog();
@@ -927,12 +1108,17 @@ async function deactivate(msg) {
   if (msg) await speakTTS(msg);
   addMsg('s','─── 세션 종료 ───');
   setState(ST.INACTIVE);   // ← INACTIVE (비활성화), 다음 활성화 시 풀 브리핑 진행
-  setFt('비활성화 — "대현자야" 또는 박수로 활성화');
+  setFt('비활성화 — "자비스야" 또는 박수(강)로 활성화');
 }
 
 function stopAudio() {
-  try { activeSource?.stop(); } catch(_) {}
-  activeSource = null;
+  if (activeSource) {
+    try {
+      if (typeof activeSource.stop === 'function') activeSource.stop();       // AudioBufferSourceNode
+      else if (typeof activeSource.pause === 'function') activeSource.pause(); // HTMLAudioElement
+    } catch(_) {}
+    activeSource = null;
+  }
   window.speechSynthesis?.cancel();
   isSpeaking = false;
 }
@@ -1019,7 +1205,7 @@ function resetSil() {
 }
 
 /** 침묵 타임아웃에 의한 대기중(STANDBY) 전환 — 명시적 종료(INACTIVE)와 구분 */
-async function goStandby() {
+async function goStandby(msg) {
   isHandling = false;
   isBriefing = false;
   ignoreSpeechInput = false;
@@ -1030,10 +1216,10 @@ async function goStandby() {
   document.getElementById('stopbtn').style.display = 'none';
   clearLines();
   document.getElementById('trUser').textContent = '';
-  await speakTTS('1분간 응답이 없어 대기 모드로 전환합니다. 현진님, 필요하시면 다시 불러주십시오.');
+  await speakTTS(msg || '1분간 응답이 없어 대기 모드로 전환합니다. 현진님, 필요하시면 다시 불러주십시오.');
   addMsg('s','─── 대기 모드 전환 ───');
   setState(ST.STANDBY);  // ← STANDBY (대기중), INACTIVE 아님
-  setFt('대기 중 — "대현자야" 또는 박수로 즉시 재개 가능');
+  setFt('대기 중 — "자비스야"로 즉시 재개 가능 (클랩 반응 없음)');
 }
 
 async function handleInput(text) {
@@ -1042,7 +1228,12 @@ async function handleInput(text) {
   try {
     const clean = text.replace(/\s/g,'');
     if (EXIT_WORDS.some(w=>clean.includes(w))) {
-      await deactivate('네, 현진님. 수고하셨습니다. 대현자 프로토콜을 일시 중단합니다.');
+      await deactivate('네, 현진님. 수고하셨습니다. 자비스 프로토콜을 일시 중단합니다.');
+      return;
+    }
+    if (STANDBY_WORDS.some(w=>clean.includes(w))) {
+      addMsg('u', text);
+      await goStandby('네, 현진님. 대기 모드로 전환합니다.');
       return;
     }
     addMsg('u', text);
@@ -1106,14 +1297,23 @@ async function sendMsg(text) {
     if(full){
       const clean=stripMd(full);
       addMsg('a',clean);
+      // AI 응답에 Job ID가 포함된 경우 job list 자동 갱신 (modify_recent_project 등 AI 툴 결과)
+      await refreshJobStore();
       setState(ST.SPEAKING);
       await speakTTS(clean);
     }
-    setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil(); startRecog();
+    ignoreSpeechInput = true;
+    setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil();
+    await delay(1500);
+    ignoreSpeechInput = false;
+    startRecog();
   } catch(e) {
     console.error(e); showPdots(false);
     setState(ST.LISTENING);
     await speakTTS('처리 중 오류가 발생하였습니다. 다시 말씀해 주십시오.');
+    ignoreSpeechInput = true;
+    await delay(1500);
+    ignoreSpeechInput = false;
     startRecog(); resetSil();
   }
 }
@@ -1140,6 +1340,7 @@ function reopenDevModal() { openDevModal(); }
 
 /** 모달 초기화 — 새 작업 시작 시 호출 */
 function resetDevModal(command) {
+  viewingJobId = null;
   document.getElementById('devModalJobId').textContent = '생성 중...';
   document.getElementById('devModalStatus').textContent = 'PENDING';
   document.getElementById('devModalStatus').style.color = '';
@@ -1149,17 +1350,31 @@ function resetDevModal(command) {
   document.getElementById('devModalProject').textContent = '-';
   document.getElementById('devModalCommand').textContent = command || '';
   document.getElementById('devModalLog').innerHTML = '';
+  // 임시 jobStore 엔트리 (jobId 확보 전)
+  jobStore.set('pending', { id: null, command: command || '', status: 'QUEUED',
+    jobType: null, projectType: null, workspace: null, logs: [], elapsed: null, startedAt: Date.now() });
 }
 
-/** 로그 라인 추가 */
-function appendDevModalLog(msg, cls) {
-  const log = document.getElementById('devModalLog');
-  if (!log) return;
+/** 로그 라인 추가 — targetJobId가 있으면 그 엔트리, 없으면 activeJobId/'pending' 사용 */
+function appendDevModalLog(msg, cls, targetJobId) {
+  const clsName  = cls || 'dev-log-progress';
+  const storeKey = targetJobId !== undefined ? targetJobId : (activeJobId || 'pending');
+  const entry = jobStore.get(storeKey);
+  if (entry) entry.logs.push({ msg, cls: clsName });
+
+  // devModal이 이 job 로그를 보고 있는 경우에만 DOM 업데이트
+  const isViewing = viewingJobId === storeKey
+                 || (viewingJobId === null && storeKey === activeJobId)
+                 || (viewingJobId === null && storeKey === 'pending');
+  if (!isViewing) return;
+
+  const logBox = document.getElementById('devModalLog');
+  if (!logBox) return;
   const el = document.createElement('div');
-  el.className = cls || 'dev-log-progress';
+  el.className = clsName;
   el.textContent = msg;
-  log.appendChild(el);
-  log.scrollTop = log.scrollHeight;
+  logBox.appendChild(el);
+  logBox.scrollTop = logBox.scrollHeight;
 }
 
 /** 메타 그리드 업데이트 */
@@ -1195,6 +1410,16 @@ function updateDevModalMeta({ jobId, status, type, projectType, project } = {}) 
     el.textContent = project ? project.replace(/\\/g, '/') : '-';
     el.title = project || '';
   }
+  // jobStore 동기화
+  const storeKey = activeJobId || 'pending';
+  const entry = jobStore.get(storeKey);
+  if (entry) {
+    if (jobId !== undefined && jobId) entry.id = jobId;
+    if (status !== undefined) entry.status = status;
+    if (type !== undefined) entry.jobType = type;
+    if (projectType !== undefined) entry.projectType = projectType;
+    if (project !== undefined) entry.workspace = project;
+  }
 }
 
 /** 로그 메시지에 맞는 CSS 클래스 반환 */
@@ -1220,6 +1445,129 @@ async function cancelDevJob() {
   } catch(e) { console.error(e); }
 }
 async function cancelDevJobFromModal() { await cancelDevJob(); }
+
+// ═══════════════════════════════════════════════════════════
+//  JOB LIST MODAL
+// ═══════════════════════════════════════════════════════════
+
+function openJobListModal() {
+  renderJobList();
+  document.getElementById('jobListModal').classList.add('show');
+}
+function closeJobListModal() {
+  document.getElementById('jobListModal').classList.remove('show');
+}
+
+function renderJobList() {
+  const container = document.getElementById('jobListContent');
+  if (!container) return;
+  if (jobStore.size === 0) {
+    container.innerHTML = '<div class="job-list-empty">실행된 Job이 없습니다.</div>';
+    return;
+  }
+  // 최신순 정렬
+  const entries = [...jobStore.entries()]
+    .filter(([k]) => k !== 'pending')
+    .sort(([,a],[,b]) => (b.startedAt||0) - (a.startedAt||0));
+
+  container.innerHTML = '';
+  for (const [jobId, job] of entries) {
+    const isRunning  = job.status === 'RUNNING' || job.status === 'QUEUED';
+    const statusCls  = job.status === 'RUNNING'   ? 'run'
+                     : job.status === 'DONE'       ? 'ok'
+                     : job.status === 'FAILED'     ? 'err'
+                     : job.status === 'CANCELLED'  ? 'cancel'
+                     : 'queue';
+    const cmdShort   = (job.command || '').slice(0, 48) + ((job.command||'').length > 48 ? '…' : '');
+    const typeLabel  = job.jobType || '—';
+
+    const item = document.createElement('div');
+    item.className = 'job-item';
+    item.id = 'job-item-' + jobId;
+    item.innerHTML =
+      '<div class="job-item-left">' +
+        '<div class="job-item-id">#' + jobId +
+          '<span class="job-item-type">' + esc(typeLabel) + '</span>' +
+        '</div>' +
+        '<div class="job-item-cmd">' + esc(cmdShort) + '</div>' +
+        '<span class="job-item-status ' + statusCls + '">' + esc(job.status || 'QUEUED') + '</span>' +
+        (job.elapsed ? '<span style="color:var(--dim);font-size:8px;margin-left:6px;">' + job.elapsed + 's</span>' : '') +
+      '</div>' +
+      '<div class="job-item-actions">' +
+        '<button class="job-act-btn" onclick="openJobLog(' + jobId + ')">로그</button>' +
+        (isRunning
+          ? '<button class="job-act-btn danger" onclick="cancelJobFromList(' + jobId + ')">취소</button>'
+          : '<button class="job-act-btn danger" onclick="deleteJobFromList(' + jobId + ')">삭제</button>'
+        ) +
+      '</div>';
+    container.appendChild(item);
+  }
+}
+
+/** Job List에서 로그 보기 */
+function openJobLog(jobId) {
+  const job = jobStore.get(jobId);
+  if (!job) return;
+  viewingJobId = jobId;
+
+  // devModal 내용 초기화 후 jobStore 데이터로 재렌더
+  document.getElementById('devModalJobId').textContent = '#' + jobId;
+  const statusEl = document.getElementById('devModalStatus');
+  statusEl.textContent = job.status || '—';
+  statusEl.style.color = job.status === 'RUNNING'   ? 'var(--orange)'
+                        : job.status === 'DONE'      ? 'var(--green)'
+                        : job.status === 'FAILED'    ? 'var(--red)'
+                        : job.status === 'CANCELLED' ? 'var(--dim)' : '';
+  document.getElementById('devModalType').textContent = job.jobType || '—';
+  const pt = document.getElementById('devModalProjType');
+  if (pt) pt.textContent = job.projectType || '-';
+  const pr = document.getElementById('devModalProject');
+  if (pr) { pr.textContent = job.workspace ? job.workspace.replace(/\\/g,'/') : '-'; pr.title = job.workspace || ''; }
+  document.getElementById('devModalCommand').textContent = job.command || '';
+
+  const logBox = document.getElementById('devModalLog');
+  logBox.innerHTML = '';
+  (job.logs || []).forEach(({ msg, cls }) => {
+    const el = document.createElement('div');
+    el.className = cls || 'dev-log-progress';
+    el.textContent = msg;
+    logBox.appendChild(el);
+  });
+  logBox.scrollTop = logBox.scrollHeight;
+
+  // 진행 중인 job이면 취소 버튼 표시, 완료면 숨김
+  const cancelBtn = document.getElementById('devModalCancelBtn');
+  cancelBtn.style.display = (job.status === 'RUNNING' || job.status === 'QUEUED') ? '' : 'none';
+
+  closeJobListModal();
+  document.getElementById('devModal').classList.add('show');
+}
+
+/** Job List에서 취소 */
+async function cancelJobFromList(jobId) {
+  try {
+    await fetch('/api/dev/jobs/' + jobId, { method: 'DELETE' });
+    const entry = jobStore.get(jobId);
+    if (entry) entry.status = 'CANCELLED';
+    renderJobList();
+    // devModal이 이 job을 보고 있으면 UI 갱신
+    if (viewingJobId === jobId) {
+      document.getElementById('devModalStatus').textContent = 'CANCELLED';
+      document.getElementById('devModalStatus').style.color = 'var(--dim)';
+      document.getElementById('devModalCancelBtn').style.display = 'none';
+    }
+  } catch(e) { console.error(e); }
+}
+
+/** Job List에서 삭제 */
+async function deleteJobFromList(jobId) {
+  try {
+    await fetch('/api/dev/jobs/' + jobId + '/delete', { method: 'DELETE' });
+    jobStore.delete(jobId);
+    if (viewingJobId === jobId) { viewingJobId = null; closeDevModal(); }
+    renderJobList();
+  } catch(e) { console.error(e); }
+}
 
 /** 우측 패널 요약 업데이트 */
 function updateDevSummary(jobId, status, jobType, workspacePath) {
@@ -1265,9 +1613,22 @@ async function handleCodeGen(text) {
     const res = await submitRes.json();
     const { jobId, jobType, projectType, workspacePath } = res;
     activeJobId           = jobId;
+    viewingJobId          = jobId;
     _activeJobType        = jobType    || 'MODIFY_JARVIS';
     _activeProjectType    = projectType || 'UNKNOWN';
     _activeWorkspacePath  = workspacePath || '';
+
+    // pending → jobId로 jobStore 키 이전
+    const pending = jobStore.get('pending');
+    if (pending) {
+      pending.id = jobId;
+      jobStore.set(jobId, pending);
+      jobStore.delete('pending');
+    } else {
+      jobStore.set(jobId, { id: jobId, command: text, status: 'RUNNING',
+        jobType: _activeJobType, projectType: _activeProjectType,
+        workspace: _activeWorkspacePath, logs: [], elapsed: null, startedAt: Date.now() });
+    }
 
     showPdots(false);
     updateDevModalMeta({ jobId, status: 'RUNNING', type: _activeJobType,
@@ -1289,23 +1650,36 @@ async function handleCodeGen(text) {
   }
 
   // 즉시 LISTENING 복귀 — Claude Code는 백그라운드에서 계속 실행
+  ignoreSpeechInput = true;
   setState(ST.LISTENING);
   setFt('세션 활성 — 말씀하세요 (Dev 백그라운드 실행 중)');
   resetSil();
+  await delay(1500);
+  ignoreSpeechInput = false;
   startRecog();
 }
 
-// ── 백그라운드 SSE 스트리밍 (handleInput 블로킹 없음) ──────
+// ── 백그라운드 SSE 스트리밍 — jobId 캡처 → 로그가 올바른 jobStore 엔트리에 저장
 async function _streamDevJob(jobId) {
   const devReport = document.getElementById('devReport');
   const launchSec = document.getElementById('devLaunchSec');
+
+  // job 전용 로그 함수: 항상 이 jobId 엔트리에 기록
+  const jlog = (msg, cls) => appendDevModalLog(msg, cls, jobId);
+
+  // 이 job의 로컬 메타 (글로벌 오염 방지)
+  let localJobType = _activeJobType;
+  let localProjectType = _activeProjectType;
+  let localWorkspacePath = _activeWorkspacePath;
+
   try {
     const streamRes = await fetch('/api/dev/jobs/' + jobId + '/stream', {
       headers: { 'Accept': 'text/event-stream' }
     });
     if (!streamRes.ok) {
-      appendDevModalLog('✗ Stream HTTP ' + streamRes.status, 'dev-log-error');
-      updateDevModalMeta({ status: 'FAILED' });
+      jlog('✗ Stream HTTP ' + streamRes.status, 'dev-log-error');
+      if (activeJobId === jobId) updateDevModalMeta({ status: 'FAILED' });
+      const e = jobStore.get(jobId); if (e) e.status = 'FAILED';
       return;
     }
 
@@ -1322,91 +1696,102 @@ async function _streamDevJob(jobId) {
         const raw = ln.slice(5).trim(); if (raw === '[DONE]') continue;
         try {
           const evt = JSON.parse(raw);
+          const isActive = (activeJobId === jobId);
+
           if (evt.type === 'log' && evt.data) {
-            appendDevModalLog(evt.data, classForDevModalLog(evt.data));
+            jlog(evt.data, classForDevModalLog(evt.data));
           } else if (evt.type === 'jobType') {
-            _activeJobType = evt.data;
-            updateDevModalMeta({ type: evt.data });
-            updateDevSummary(activeJobId, 'RUNNING', evt.data, _activeWorkspacePath);
+            localJobType = evt.data;
+            const e = jobStore.get(jobId); if (e) e.jobType = evt.data;
+            if (isActive) { _activeJobType = evt.data; updateDevModalMeta({ type: evt.data }); updateDevSummary(jobId, 'RUNNING', evt.data, localWorkspacePath); }
           } else if (evt.type === 'projectType') {
-            _activeProjectType = evt.data;
-            updateDevModalMeta({ projectType: evt.data });
+            localProjectType = evt.data;
+            const e = jobStore.get(jobId); if (e) e.projectType = evt.data;
+            if (isActive) { _activeProjectType = evt.data; updateDevModalMeta({ projectType: evt.data }); }
           } else if (evt.type === 'workspace') {
-            _activeWorkspacePath = evt.data;
-            updateDevModalMeta({ project: evt.data });
-            updateDevSummary(activeJobId, 'RUNNING', _activeJobType, evt.data);
+            localWorkspacePath = evt.data;
+            const e = jobStore.get(jobId); if (e) e.workspace = evt.data;
+            if (isActive) { _activeWorkspacePath = evt.data; updateDevModalMeta({ project: evt.data }); updateDevSummary(jobId, 'RUNNING', localJobType, evt.data); }
           } else if (evt.type === 'status') {
-            updateDevModalMeta({ status: evt.data });
-            appendDevModalLog('[ STATUS: ' + evt.data + ' ]', 'dev-log-sys');
-            updateDevSummary(activeJobId || 0, evt.data, _activeJobType, _activeWorkspacePath);
+            jlog('[ STATUS: ' + evt.data + ' ]', 'dev-log-sys');
+            const e = jobStore.get(jobId); if (e) e.status = evt.data;
+            if (isActive || viewingJobId === jobId) { updateDevModalMeta({ status: evt.data }); }
+            if (isActive) updateDevSummary(jobId, evt.data, localJobType, localWorkspacePath);
+            // QUEUED → RUNNING 전환 시 devModal이 이 job을 보고 있으면 cancel 버튼 표시
+            if (evt.data === 'RUNNING' && viewingJobId === jobId) {
+              document.getElementById('devModalCancelBtn').style.display = '';
+            }
+          } else if (evt.type === 'preview') {
+            const url = evt.data;
+            const entry = jobStore.get(jobId);
+            if (entry) entry.logs.push({ msg: '🌐 미리보기: ' + url, cls: 'dev-log-sys' });
+            // 현재 보고 있는 job이면 링크도 DOM에 추가
+            if (viewingJobId === jobId || isActive) {
+              const logBox = document.getElementById('devModalLog');
+              if (logBox) {
+                const el = document.createElement('div');
+                el.className = 'dev-log-sys';
+                el.innerHTML = '🌐 미리보기: <a href="' + url + '" target="_blank" style="color:var(--cyan);text-decoration:underline;">' + url + '</a>';
+                logBox.appendChild(el);
+                logBox.scrollTop = logBox.scrollHeight;
+              }
+            }
+            // preview TTS는 done에서 통합 발화하므로 여기서는 생략
           } else if (evt.type === 'done') {
             const doneData = JSON.parse(evt.data);
             summary  = doneData.summary      || '';
             fileList = doneData.changedFiles  || [];
             buildOk  = doneData.buildSuccess === true;
-            const jType = doneData.jobType    || _activeJobType || 'MODIFY_JARVIS';
+            const jType   = doneData.jobType    || localJobType || 'MODIFY_JARVIS';
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            document.getElementById('devModalCancelBtn').style.display = 'none';
-            appendDevModalLog('', 'dev-log-sys');
-
-            // ── 성공/실패 판정 — 서버 판정을 신뢰 (SUCCESS_WITH_WARNINGS 포함) ──
-            const serverStatus = doneData.status || '';
-            const projType     = doneData.projectType || _activeProjectType || 'UNKNOWN';
-            const nonReadmeFiles = fileList.filter(f => f.toLowerCase() !== 'readme.md');
-
-            // 서버가 DONE 으로 판정했으면 성공 (exitCode != 0 이어도 파일 있으면 DONE)
-            let actualSuccess = !doneData.cancelled && serverStatus === 'DONE';
-
-            const finalStatus = doneData.cancelled ? 'CANCELLED'
-                               : (actualSuccess ? 'DONE' : 'FAILED');
-
-            // 판정 결과 로그
-            if (actualSuccess && fileList.length > 0 && doneData.actualSuccess === false) {
-              // SUCCESS_WITH_WARNINGS: 파일은 있지만 exit!=0
-              appendDevModalLog('▶ 최종 판정: SUCCESS_WITH_WARNINGS', 'dev-log-done');
-            } else {
-              appendDevModalLog('━━━ ' + (actualSuccess ? '완료' : '실패') + ' (' + elapsed + 's) ━━━',
-                                actualSuccess ? 'dev-log-done' : 'dev-log-error');
+            if (isActive || viewingJobId === jobId) {
+              document.getElementById('devModalCancelBtn').style.display = 'none';
             }
-            if (doneData.diffStat) appendDevModalLog(doneData.diffStat, 'dev-log-file');
-            fileList.forEach(f => appendDevModalLog('  ✓ ' + f, 'dev-log-file'));
+            jlog('', 'dev-log-sys');
+
+            const serverStatus   = doneData.status || '';
+            const projType       = doneData.projectType || localProjectType || 'UNKNOWN';
+            const nonReadmeFiles = fileList.filter(f => f.toLowerCase() !== 'readme.md');
+            let actualSuccess    = !doneData.cancelled && serverStatus === 'DONE';
+            const finalStatus    = doneData.cancelled ? 'CANCELLED' : (actualSuccess ? 'DONE' : 'FAILED');
+
+            if (actualSuccess && fileList.length > 0 && doneData.actualSuccess === false) {
+              jlog('▶ 최종 판정: SUCCESS_WITH_WARNINGS', 'dev-log-done');
+            } else {
+              jlog('━━━ ' + (actualSuccess ? '완료' : '실패') + ' (' + elapsed + 's) ━━━',
+                    actualSuccess ? 'dev-log-done' : 'dev-log-error');
+            }
+            if (doneData.diffStat) jlog(doneData.diffStat, 'dev-log-file');
+            fileList.forEach(f => jlog('  ✓ ' + f, 'dev-log-file'));
             if (jType !== 'NEW_PROJECT') {
-              appendDevModalLog(buildOk ? '✓ BUILD SUCCESS' : '✗ BUILD FAILED',
-                                buildOk ? 'dev-log-done' : 'dev-log-error');
+              jlog(buildOk ? '✓ BUILD SUCCESS' : '✗ BUILD FAILED', buildOk ? 'dev-log-done' : 'dev-log-error');
             }
             if (!actualSuccess && jType === 'NEW_PROJECT') {
-              if (nonReadmeFiles.length === 0) {
-                appendDevModalLog('✗ 결과 파일 없음 — Claude가 파일을 생성하지 않았습니다.', 'dev-log-error');
-              } else {
-                appendDevModalLog('✗ 필수 파일 부족', 'dev-log-error');
-              }
+              if (nonReadmeFiles.length === 0) jlog('✗ 결과 파일 없음 — Claude가 파일을 생성하지 않았습니다.', 'dev-log-error');
+              else jlog('✗ 필수 파일 부족', 'dev-log-error');
             }
 
-            const wsPath = doneData.workspacePath || _activeWorkspacePath;
-            updateDevModalMeta({ status: finalStatus, type: jType, projectType: projType, project: wsPath });
-            updateDevSummary(activeJobId || 0, finalStatus, jType, wsPath);
-            renderDevReport(fileList, buildOk, elapsed, devReport, launchSec,
-                            doneData.diffStat || '', jType, wsPath);
+            const wsPath = doneData.workspacePath || localWorkspacePath;
+            const doneEntry = jobStore.get(jobId);
+            if (doneEntry) { doneEntry.status = finalStatus; doneEntry.elapsed = elapsed; doneEntry.jobType = jType; doneEntry.projectType = projType; doneEntry.workspace = wsPath; }
 
-            const displaySummary = stripMd(summary || (actualSuccess ? '코드 생성 완료' : '코드 생성 실패'));
-            addMsg('a', '[Dev ' + (actualSuccess ? '완료' : '실패') + '] ' + displaySummary);
+            if (isActive || viewingJobId === jobId) {
+              updateDevModalMeta({ status: finalStatus, type: jType, projectType: projType, project: wsPath });
+            }
+            if (isActive) {
+              updateDevSummary(jobId, finalStatus, jType, wsPath);
+              renderDevReport(fileList, buildOk, elapsed, devReport, launchSec, doneData.diffStat || '', jType, wsPath);
+            }
 
-            // ── TTS 완료/실패 알림 ────────────────────────────────────
+            addMsg('a', '[Dev ' + (actualSuccess ? '완료' : '실패') + '] ' + stripMd(summary || (actualSuccess ? '코드 생성 완료' : '코드 생성 실패')));
+
             const ttsMsg = actualSuccess
-              ? 'Claude Code 작업 완료. 새 프로젝트가 생성되었습니다.'
-              : 'Claude Code 실행에 실패했습니다. 파일이 정상 생성되지 않았습니다. Dev Modal 로그를 확인해 주세요.';
-            if (jType === 'NEW_PROJECT') {
-              // 현재 LISTENING 상태이면 즉시 TTS, 아니면 잠시 후
-              if (appSt === ST.LISTENING || appSt === ST.STANDBY || appSt === ST.INACTIVE) {
-                speakTTS(ttsMsg).catch(console.error);
-              }
-            } else {
-              const modifyMsg = actualSuccess
-                ? (summary || '현진님, 요청하신 기능 개발이 완료되었습니다.')
-                : 'Claude Code 실행에 실패했습니다. Dev Modal 로그를 확인해 주세요.';
-              if (appSt === ST.LISTENING || appSt === ST.STANDBY || appSt === ST.INACTIVE) {
-                speakTTS(stripMd(modifyMsg)).catch(console.error);
-              }
+              ? (jType === 'NEW_PROJECT'
+                  ? 'Claude Code CLI 완료됐습니다. 작업된 결과 보여드리겠습니다.'
+                  : 'Claude Code CLI 완료됐습니다. 작업된 결과 보여드리겠습니다.')
+              : 'Claude Code 실행에 실패했습니다. 개발 모달 로그를 확인해 주세요.';
+            if (appSt === ST.LISTENING || appSt === ST.STANDBY || appSt === ST.INACTIVE) {
+              speakTTS(ttsMsg).catch(console.error);
             }
           }
         } catch(_) {}
@@ -1414,10 +1799,12 @@ async function _streamDevJob(jobId) {
     }
   } catch(e) {
     console.error('[_streamDevJob]', e);
-    appendDevModalLog('✗ 스트림 오류: ' + e.message, 'dev-log-error');
-    updateDevModalMeta({ status: 'FAILED' });
+    jlog('✗ 스트림 오류: ' + e.message, 'dev-log-error');
+    if (activeJobId === jobId) updateDevModalMeta({ status: 'FAILED' });
+    const fe = jobStore.get(jobId); if (fe) fe.status = 'FAILED';
   } finally {
-    activeJobId = null;
+    // 이 job이 활성 job인 경우에만 activeJobId 초기화
+    if (activeJobId === jobId) activeJobId = null;
   }
 }
 
@@ -1430,6 +1817,66 @@ function isChromExtensionJob(workspacePath, summary) {
 // 하위호환 유지용 no-op
 function addCgLog(msg, cls) {}
 function classForLog(msg) { return classForDevModalLog(msg); }
+
+/** 서버에서 최근 Job 목록을 로드해 jobStore에 채운다 (페이지 로드 시 1회) */
+async function loadJobHistory() {
+  try {
+    const resp = await fetch('/api/dev/jobs');
+    if (!resp.ok) return;
+    const jobs = await resp.json();
+    for (const job of jobs) {
+      const id = job.id;
+      if (!id || jobStore.has(id)) continue;
+      jobStore.set(id, {
+        id,
+        command:     job.command     || '',
+        status:      job.status      || 'UNKNOWN',
+        jobType:     job.jobType     || null,
+        projectType: job.projectType || null,
+        workspace:   job.workspacePath || null,
+        logs:        [],
+        elapsed:     null,
+        startedAt:   job.createdAt ? new Date(job.createdAt).getTime() : 0
+      });
+    }
+    log.debug && console.debug('[loadJobHistory] ' + jobs.length + '개 job 로드됨');
+  } catch(e) {
+    console.warn('[loadJobHistory] 실패:', e.message);
+  }
+}
+
+/** AI 응답 후 서버에서 job 목록을 다시 가져와 새 job을 jobStore에 추가하고 스트리밍 시작 */
+async function refreshJobStore() {
+  try {
+    const resp = await fetch('/api/dev/jobs');
+    if (!resp.ok) return;
+    const jobs = await resp.json();
+    let hasNew = false;
+    for (const job of jobs) {
+      const id = job.id;
+      if (!id || jobStore.has(id)) continue;
+      jobStore.set(id, {
+        id,
+        command:     job.command     || '',
+        status:      job.status      || 'UNKNOWN',
+        jobType:     job.jobType     || null,
+        projectType: job.projectType || null,
+        workspace:   job.workspacePath || null,
+        logs:        [],
+        elapsed:     null,
+        startedAt:   job.createdAt ? new Date(job.createdAt).getTime() : 0
+      });
+      hasNew = true;
+      // QUEUED/RUNNING 잡은 즉시 SSE 스트리밍 시작
+      if (job.status === 'QUEUED' || job.status === 'RUNNING') {
+        _streamDevJob(id);
+      }
+    }
+    if (hasNew && document.getElementById('jobListModal')?.classList.contains('show')) {
+      renderJobList();
+    }
+  } catch(e) {}
+}
 
 // 우측 패널 요약 리포트 렌더링
 function renderDevReport(files, buildOk, elapsed, container, section, diffStat, jobType, workspacePath) {
@@ -1464,29 +1911,21 @@ async function speakTTS(text) {
   typingStop = false;
   clearLines();
 
-  if (audioCtx) {
-    try {
-      await playCloudTTS(t);
-      showTTSMode(true);
-      return;
-    } catch(e) {
-      console.warn('[TTS] OpenAI onyx 실패, 브라우저 전환:', e.message);
-      showTTSMode(false);
-    }
-  } else {
+  // Cloud TTS는 AudioContext 상태와 무관하게 항상 시도 (HTMLAudioElement 사용)
+  try {
+    await playCloudTTS(t);
+    showTTSMode(true);
+    return;
+  } catch(e) {
+    console.warn('[TTS] OpenAI onyx 실패, 브라우저 전환:', e.message);
     showTTSMode(false);
   }
 
   await playBrowserTTS(t);
 }
 
-// OpenAI alloy via /api/tts/speak
+// OpenAI onyx via /api/tts/speak — HTMLAudioElement로 재생 (AudioContext 서스펜드 무관)
 async function playCloudTTS(text) {
-  if (audioCtx.state !== 'running') {
-    await audioCtx.resume();
-    if (audioCtx.state !== 'running') throw new Error('AudioContext suspended');
-  }
-
   const resp = await fetch('/api/tts/speak', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1497,23 +1936,31 @@ async function playCloudTTS(text) {
   const bytes = await resp.arrayBuffer();
   if (!bytes.byteLength) throw new Error('Empty audio response');
 
-  const audioBuf = await audioCtx.decodeAudioData(bytes);
-  const durationMs = audioBuf.duration * 1000;
+  const blob    = new Blob([bytes], { type: 'audio/mpeg' });
+  const blobUrl = URL.createObjectURL(blob);
+  const audio   = new Audio(blobUrl);
+  activeSource  = audio;
+  isSpeaking    = true;
 
-  const src = audioCtx.createBufferSource();
-  src.buffer = audioBuf;
-  src.connect(audioCtx.destination);
-  activeSource = src;
-  isSpeaking = true;
+  // 오디오 메타데이터 로드 후 duration 확보
+  const durationMs = await new Promise((resolve, reject) => {
+    audio.onloadedmetadata = () => resolve(audio.duration * 1000);
+    audio.onerror = () => reject(new Error('Audio load error'));
+    audio.load();
+  });
 
-  // Start audio and animation in the same synchronous block for tightest alignment
-  src.start();
-  const audioEnd = new Promise(resolve => { src.onended = resolve; });
-  const typing   = typeTextAnimated(text, durationMs);
+  const audioEnd = new Promise(resolve => {
+    audio.onended = resolve;
+    audio.onerror = resolve;
+  });
+
+  audio.play().catch(e => { throw new Error('Audio play failed: ' + e.message); });
+  const typing = typeTextAnimated(text, durationMs);
 
   await Promise.all([audioEnd, typing]);
+  URL.revokeObjectURL(blobUrl);
   activeSource = null;
-  isSpeaking = false;
+  isSpeaking   = false;
   removeCursor();
 }
 
@@ -1603,12 +2050,11 @@ async function typeTextAnimated(text, totalDurationMs) {
 
   const numSlides  = lines.length - 1;
   const slideMs    = 100;
-  // 전체 글자 수(공백 포함) 기준으로 타이밍 배분 — 공백도 타이핑 비용에 포함
   const totalChars = lines.reduce((s, l) => s + l.text.length, 0) || 1;
-  // 오디오 길이보다 약간 빠르게(0.88배) 완료되도록 설정 → 싱크 선행 보정
+  // 오디오 종료 직전(97%)에 타이핑 완료 → TTS 속도와 글자 생성 속도 일치
   const typingBudget = Math.max(
-    totalDurationMs * 0.88 - numSlides * slideMs,
-    totalChars * 3   // 최소 글자당 3ms
+    totalDurationMs * 0.97 - numSlides * slideMs,
+    totalChars * 10  // 절대 최소: 글자당 10ms
   );
 
   const startTime = performance.now();
@@ -1627,17 +2073,19 @@ async function typeTextAnimated(text, totalDurationMs) {
 
     addCursor();
 
+    // 글자 단위로 표시 — TTS 발화 속도에 맞춰 한 글자씩 생성
+    let displayed = '';
     for (let ci = 0; ci < lineText.length; ci++) {
       if (typingStop) break;
+      displayed += lineText[ci];
+      charsSoFar++;
 
-      // 공백 포함 모든 글자에 동일하게 타이밍 적용 (공백 뭉개짐 방지)
       const targetMs = (charsSoFar / totalChars) * typingBudget;
       const elapsed  = performance.now() - startTime;
       const waitMs   = Math.max(0, targetMs - elapsed);
       if (waitMs > 0.5) await delay(waitMs);
 
-      charsSoFar++;
-      setLineEls(topText, lineText.slice(0, ci + 1), false);
+      setLineEls(topText, displayed, false);
     }
   }
 
@@ -1687,7 +2135,8 @@ function showPdots(show) {
 }
 
 const STLBL={init:'초기화',inactive:'비활성화',standby:'대기 중',activating:'활성화 중',
-  briefing:'브리핑 중',listening:'청취 중',processing:'처리 중',speaking:'응답 중'};
+  briefing:'브리핑 중',listening:'청취 중',processing:'처리 중',speaking:'응답 중',
+  intercept:'인터셉트 청취중'};
 
 function setState(s) {
   appSt=s;
@@ -1701,7 +2150,7 @@ function addMsg(role, text) {
   const log=document.getElementById('clog');
   const d=document.createElement('div');
   d.className=`msg m${role}`;
-  const labels={u:'현진님',a:'대현자',s:''};
+  const labels={u:'현진님',a:'자비스',s:''};
   d.innerHTML=`<span class="mrole">${labels[role]||''}</span><span class="mt">${esc(text)}</span>`;
   log.appendChild(d); log.scrollTop=log.scrollHeight;
   if(role!=='s'){msgCnt++;document.getElementById('mcnt').textContent=msgCnt;}
@@ -1764,22 +2213,21 @@ async function refreshTodayTodoState() {
 function renderCards(todos, memos) {
   const row = document.getElementById('cardsRow');
   const section = document.getElementById('cardsSection');
-  // 기존 카드 제거 (+ 버튼은 유지)
   [...row.querySelectorAll('.card')].forEach(el=>el.remove());
 
   const addBtn = row.querySelector('.cards-add-btn');
 
-  // Todo 카드 — 미완료 먼저, 동일 상태 내에서는 등록 순 (오래된 것 왼쪽, 새 것 오른쪽)
+  // Todo 카드 — 미완료 먼저
   [...todos].sort((a,b) => a.done - b.done).forEach(t => {
     const el = document.createElement('div');
     el.className = 'card card-todo' + (t.done?' card-done':'');
     el.dataset.id = t.id; el.dataset.type = 'todo';
     el.innerHTML = `
-      <div class="card-type">◆ TODO</div>
+      <div class="card-type"><span style="color:var(--cyan)">◆</span> TODO</div>
       <div class="card-title">${esc(t.title)}</div>
-      <div class="card-sub">${t.dueDate?'📅 '+t.dueDate : t.done?'✓ 완료':'미완료'}</div>
+      <div class="card-sub">${t.done?'<span style="color:var(--green)">✓</span> 완료':'<span style="opacity:.5">○</span> 미완료'}${t.dueDate?' &nbsp;· '+t.dueDate:''}</div>
       <button class="card-del" onclick="deleteCard(event,'todo',${t.id})">✕</button>`;
-    el.addEventListener('click', (e)=>{ if(!e.target.classList.contains('card-del')) toggleTodo(t.id,el); });
+    el.addEventListener('click', (e)=>{ if(!e.target.classList.contains('card-del')) openCardDetail({type:'todo',id:t.id,title:t.title,body:t.description||'',done:t.done,dueDate:t.dueDate}); });
     row.insertBefore(el, addBtn);
   });
 
@@ -1788,16 +2236,68 @@ function renderCards(todos, memos) {
     const el = document.createElement('div');
     el.className = 'card card-memo';
     el.dataset.id = m.id; el.dataset.type = 'memo';
-    const preview = (m.content||'').slice(0,40) + ((m.content||'').length>40?'…':'');
     el.innerHTML = `
-      <div class="card-type">◈ MEMO</div>
+      <div class="card-type"><span style="color:var(--gold)">◈</span> MEMO</div>
       <div class="card-title">${esc(m.title)}</div>
-      <div class="card-sub">${esc(preview)||'내용 없음'}</div>
+      <div class="card-body">${esc(m.content||'')}</div>
       <button class="card-del" onclick="deleteCard(event,'memo',${m.id})">✕</button>`;
+    el.addEventListener('click', (e)=>{ if(!e.target.classList.contains('card-del')) openCardDetail({type:'memo',id:m.id,title:m.title,body:m.content||''}); });
     row.insertBefore(el, addBtn);
   });
 
   section.style.display = (todos.length + memos.length > 0) ? 'block' : 'none';
+}
+
+// 카드 상세 모달
+let _cardDetailData = null;
+function openCardDetail(data) {
+  _cardDetailData = data;
+  const ov = document.getElementById('cardDetailOverlay');
+  document.getElementById('cdType').textContent = data.type === 'todo' ? '◆ TODO' : '◈ MEMO';
+  document.getElementById('cdTitle').textContent = data.title || '';
+  document.getElementById('cdBody').textContent = data.body || '';
+
+  const foot = document.getElementById('cdFoot');
+  foot.innerHTML = '';
+
+  if (data.type === 'todo') {
+    const meta = document.createElement('div');
+    meta.className = 'cd-meta';
+    meta.textContent = data.dueDate ? '마감 ' + data.dueDate : '';
+    foot.appendChild(meta);
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'cd-btn cd-btn-toggle';
+    toggleBtn.textContent = data.done ? '미완료로 변경' : '완료 처리';
+    toggleBtn.onclick = async () => {
+      await fetch('/api/todos/'+data.id+'/toggle', {method:'PATCH'});
+      closeCardDetail();
+      await refreshTodayTodoState();
+    };
+    foot.appendChild(toggleBtn);
+  } else {
+    const meta = document.createElement('div');
+    meta.className = 'cd-meta';
+    foot.appendChild(meta);
+  }
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'cd-btn cd-btn-del';
+  delBtn.textContent = '삭제';
+  delBtn.onclick = async () => {
+    const url = '/api/' + (data.type === 'todo' ? 'todos' : 'memos') + '/' + data.id;
+    await fetch(url, {method:'DELETE'});
+    closeCardDetail();
+    await refreshTodayTodoState();
+  };
+  foot.appendChild(delBtn);
+
+  ov.classList.add('show');
+}
+
+function closeCardDetail() {
+  document.getElementById('cardDetailOverlay').classList.remove('show');
+  _cardDetailData = null;
 }
 
 async function toggleTodo(id, el) {
@@ -1852,7 +2352,11 @@ async function handleAddTodo(title) {
     showPdots(false);
     await speakTTS('할일 등록 중 오류가 발생했습니다.');
   }
-  setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil(); startRecog();
+  ignoreSpeechInput = true;
+  setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil();
+  await delay(1500);
+  ignoreSpeechInput = false;
+  startRecog();
 }
 
 async function handleAddMemo(title) {
@@ -1872,7 +2376,11 @@ async function handleAddMemo(title) {
     showPdots(false);
     await speakTTS('메모 저장 중 오류가 발생했습니다.');
   }
-  setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil(); startRecog();
+  ignoreSpeechInput = true;
+  setState(ST.LISTENING); setFt('세션 활성 — 말씀하세요'); resetSil();
+  await delay(1500);
+  ignoreSpeechInput = false;
+  startRecog();
 }
 
 /** Optimistic add: 서버 응답 전 즉시 임시 카드 삽입 → 맨 오른쪽 (+버튼 앞) */
@@ -1962,7 +2470,7 @@ document.addEventListener('keydown', e => {
 async function createConv() {
   const r=await fetch('/api/conversations',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({title:'대현자 세션 — '+new Date().toLocaleString('ko-KR')})
+    body:JSON.stringify({title:'자비스 세션 — '+new Date().toLocaleString('ko-KR')})
   });
   return (await r.json()).id;
 }
