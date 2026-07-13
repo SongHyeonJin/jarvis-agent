@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Jarvis Background Listener v2.0
-- 2 claps (peak detection) -> open Chrome maximized
-- "jarvis"/"자비스" voice -> open Chrome (if speech_recognition installed)
+Jarvis Background Listener v2.1
+- "jarvis"/"자비스" voice -> open Chrome
 - System tray icon, auto-start on Windows login
 """
 
@@ -20,14 +19,6 @@ import urllib.request
 import json
 
 try:
-    import sounddevice as sd
-    import numpy as np
-    AUDIO_OK = True
-except ImportError:
-    print("[ERROR] sounddevice/numpy not found. Run install.bat first.", flush=True)
-    AUDIO_OK = False
-
-try:
     import pystray
     from PIL import Image, ImageDraw
     TRAY_OK = True
@@ -41,39 +32,12 @@ except ImportError:
     SR_OK = False
 
 # ── Config ──────────────────────────────────────────────────
-JARVIS_URL     = "http://localhost:8081?activate=1"
-JARVIS_WAKE    = "http://localhost:8081/api/card-events/wake"
-CLAP_THRESHOLD = 0.40    # peak amplitude — filters out reverb/echo (user-calibrated)
-CLAP_COOLDOWN  = 0.5     # min seconds between clap events
-CLAP_WINDOW    = 4.0     # time window for 2-clap sequence
-SAMPLE_RATE    = 44100
-BLOCK_SIZE     = 512     # smaller block = faster response
+JARVIS_URL  = "http://localhost:8081?activate=1"
+JARVIS_WAKE = "http://localhost:8081/api/card-events/wake"
 # ────────────────────────────────────────────────────────────
 
-clap_times = []
-clap_lock  = threading.Lock()
-last_clap  = 0.0
 activating = False
 act_lock   = threading.Lock()
-
-
-def audio_callback(indata, frames, time_info, status):
-    """Peak-based clap detection — fires on any buffer with high peak."""
-    global last_clap
-    peak = float(np.max(np.abs(indata)))
-    now  = time.time()
-
-    if peak > CLAP_THRESHOLD and (now - last_clap) > CLAP_COOLDOWN:
-        last_clap = now
-        with clap_lock:
-            clap_times[:] = [t for t in clap_times if now - t < CLAP_WINDOW]
-            clap_times.append(now)
-            cnt = len(clap_times)
-        print(f"[Clap] {cnt}x  peak={peak:.3f}", flush=True)
-        if cnt >= 2:
-            with clap_lock:
-                clap_times.clear()
-            threading.Thread(target=activate, args=("clap",), daemon=True).start()
 
 
 def activate(source="unknown"):
@@ -92,7 +56,6 @@ def activate(source="unknown"):
 
 
 def open_jarvis():
-    # 1) SSE wake 신호 전송 → 이미 열린 탭은 즉시 activate()
     clients = 0
     try:
         req = urllib.request.Request(
@@ -106,7 +69,6 @@ def open_jarvis():
     except Exception as e:
         print(f"[Wake] server not reachable: {e}", flush=True)
 
-    # 2) 열린 탭이 없거나 서버 미응답이면 Chrome 새 창으로 열기
     if clients == 0:
         chrome_paths = [
             r"C:\Program Files\Google\Chrome\Application\chrome.exe",
@@ -120,12 +82,10 @@ def open_jarvis():
         else:
             subprocess.Popen(f'start "" "{JARVIS_URL}"', shell=True)
     else:
-        # 이미 열린 탭에 wake 전송됨 — Chrome 창을 앞으로 가져오기
         _focus_chrome_window()
 
 
 def _focus_chrome_window():
-    """PowerShell로 Chrome 창을 전경으로 가져오기."""
     try:
         ps = (
             "$w=(Get-Process chrome -ErrorAction SilentlyContinue|"
@@ -165,7 +125,7 @@ def speech_loop():
             except sr.RequestError as e:
                 print(f"[STT] API error: {e}", flush=True)
                 time.sleep(5)
-        except Exception as e:
+        except Exception:
             time.sleep(2)
 
 
@@ -180,36 +140,16 @@ def make_tray_icon():
 
 
 def main():
-    print("=== Jarvis Listener v2.0 ===", flush=True)
+    print("=== Jarvis Listener v2.1 (voice only) ===", flush=True)
 
-    if not AUDIO_OK:
-        print("[ERROR] Audio library not available.", flush=True)
-        input("Press Enter to exit...")
-        return
-
-    # Speech recognition thread
     if SR_OK:
         threading.Thread(target=speech_loop, daemon=True).start()
         print("[STT] Google STT active", flush=True)
     else:
-        print("[STT] speech_recognition not installed - clap-only mode", flush=True)
+        print("[ERROR] speech_recognition not installed. Run install.bat first.", flush=True)
+        input("Press Enter to exit...")
+        return
 
-    # Audio stream for clap detection
-    try:
-        stream = sd.InputStream(
-            samplerate=SAMPLE_RATE,
-            blocksize=BLOCK_SIZE,
-            channels=1,
-            dtype="float32",
-            callback=audio_callback,
-        )
-        stream.start()
-        print(f"[Audio] Stream started (threshold={CLAP_THRESHOLD}, block={BLOCK_SIZE})", flush=True)
-    except Exception as e:
-        print(f"[ERROR] Microphone init failed: {e}", flush=True)
-        stream = None
-
-    # System tray
     if TRAY_OK:
         icon_img = make_tray_icon()
 
@@ -229,7 +169,7 @@ def main():
         icon = pystray.Icon("Jarvis", icon_img, "Jarvis Listener", menu)
         _icon_ref[0] = icon
         print("[Tray] System tray icon shown", flush=True)
-        icon.run()  # blocking
+        icon.run()
     else:
         print("[Tray] No tray support - Ctrl+C to exit", flush=True)
         try:
@@ -237,9 +177,6 @@ def main():
                 time.sleep(1)
         except KeyboardInterrupt:
             pass
-
-    if stream:
-        stream.stop()
 
 
 if __name__ == "__main__":
