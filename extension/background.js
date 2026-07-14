@@ -1,6 +1,7 @@
 const JARVIS_URL = 'http://localhost:8081';
 let activating = false;
 
+
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === 'JARVIS_ACTIVATE') openJarvis(msg.source || 'unknown');
 });
