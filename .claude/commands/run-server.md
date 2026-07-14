@@ -33,9 +33,9 @@ Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinu
 # gradlew.bat 자동 탐색 (Gradle 버전 무관)
 $gradleWrapperPath = "d:\jarvis-agent\gradlew.bat"
 
-# 서버 기동
+# 서버 기동 (local 프로파일로 application-local.yml 적용)
 Start-Process -FilePath "cmd.exe" `
-    -ArgumentList "/c cd /d d:\jarvis-agent && $gradleWrapperPath bootRun > server.log 2> server.log.err" `
+    -ArgumentList "/c set SPRING_PROFILES_ACTIVE=local && d:\jarvis-agent\gradlew.bat -p d:\jarvis-agent bootRun > d:\jarvis-agent\server.log 2> d:\jarvis-agent\server.log.err" `
     -WindowStyle Hidden
 
 # 기동 대기
