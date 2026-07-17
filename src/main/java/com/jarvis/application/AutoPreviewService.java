@@ -56,14 +56,15 @@ public class AutoPreviewService {
         int    port    = freePort();
         String url     = "http://localhost:" + port;
 
+        String command = "npm run " + script;
         ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "npm", "run", script,
                 "--", "--port", String.valueOf(port));
         pb.directory(root.toFile());
         pb.redirectErrorStream(true);
         pb.redirectOutput(root.resolve("preview.log").toFile());
-        pb.start();
+        Process process = pb.start();
 
-        runningServiceService.register(jobId, name, port, projectTypeName, url);
+        runningServiceService.register(name, projectTypeName, command, port, root.toString(), process);
         log.info("[AutoPreview] npm {} 시작: {} port={}", script, name, port);
 
         openBrowserDelayed(url, 5);
@@ -91,18 +92,21 @@ public class AutoPreviewService {
 
         // npx serve 우선, 없으면 Python http.server
         File npx = new File(System.getenv().getOrDefault("APPDATA", ""), "npm/npx.cmd");
+        String command;
         if (npx.exists()) {
             pb = new ProcessBuilder("cmd", "/c", npx.getAbsolutePath(),
                     "serve", "-s", ".", "-l", String.valueOf(port));
+            command = "npx serve";
         } else {
             pb = new ProcessBuilder("cmd", "/c", "python", "-m", "http.server", String.valueOf(port));
+            command = "python -m http.server";
         }
         pb.directory(root.toFile());
         pb.redirectErrorStream(true);
         pb.redirectOutput(root.resolve("preview.log").toFile());
-        pb.start();
+        Process process = pb.start();
 
-        runningServiceService.register(jobId, name, port, "WEB_APP", url);
+        runningServiceService.register(name, "WEB_APP", command, port, root.toString(), process);
         log.info("[AutoPreview] 정적 서버 시작: {} port={}", name, port);
 
         // 메모에 서버 정보 기록
