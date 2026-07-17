@@ -21,6 +21,17 @@ spring:
     properties:
       hibernate:
         format_sql: false
+  ai:
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY}
+      chat:
+        options:
+          model: claude-sonnet-4-6
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: llama3.2:1b
 
 ai:
   openai:
@@ -34,6 +45,15 @@ server:
 anthropic:
   api-key: ${ANTHROPIC_API_KEY}
   model: claude-sonnet-4-6
+
+# 대화 복잡도별 라우팅에 사용할 실제 모델 ID
+jarvis:
+  ai:
+    model:
+      opus: claude-opus-4-8
+      sonnet: claude-sonnet-4-6
+      haiku: claude-haiku-4-5-20251001
+      ollama: llama3.2:1b
 
 app:
   project-root: d:/jarvis-agent
