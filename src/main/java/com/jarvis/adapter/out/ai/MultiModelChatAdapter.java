@@ -53,10 +53,20 @@ public class MultiModelChatAdapter implements AiModelPort {
         String model = router.modelFor(tier);
         log.info("[MultiModelChatAdapter] tier={} model={}", tier, model);
 
-        Prompt prompt = buildPrompt(systemPrompt, history, userMessage, tier, model);
-        ChatClient client = (tier == ModelRouter.Tier.OLLAMA) ? ollamaClient : anthropicClient;
+        if (tier == ModelRouter.Tier.OLLAMA) {
+            try {
+                Prompt prompt = buildPrompt(systemPrompt, history, userMessage, tier, model);
+                return ollamaClient.prompt(prompt).call().content();
+            } catch (Exception e) {
+                // 로컬 Ollama가 배포 환경에 없거나 꺼져 있을 수 있음 — Sonnet으로 폴백
+                log.warn("[MultiModelChatAdapter] Ollama 호출 실패, Sonnet으로 폴백: {}", e.getMessage());
+                tier = ModelRouter.Tier.SONNET;
+                model = router.modelFor(tier);
+            }
+        }
 
-        return client.prompt(prompt).call().content();
+        Prompt prompt = buildPrompt(systemPrompt, history, userMessage, tier, model);
+        return anthropicClient.prompt(prompt).call().content();
     }
 
     @Override
