@@ -22,11 +22,13 @@ tool/               → Spring AI @Tool classes
 ```
 
 ## AI 라우팅
-- **Claude Sonnet 4.6** → `AnthropicChatAdapter` (ChatService — 대화·도구호출), `ClaudeCliExecutor` (일반 NEW_PROJECT·MODIFY)
-- **Claude Opus 4.8** → `ClaudeCliExecutor` (복잡 NEW_PROJECT — MSA·풀스택·결제·보안·플랫폼 등 대형 아키텍처)
-- **Claude Haiku** → `DevJobService` (단순 UI/스타일 수정 — `selectModel()`이 자동 감지)
+- **ChatService (대화·도구호출)** → `MultiModelChatAdapter`(Spring AI `ChatClient`)가 `ModelRouter`의 판단에 따라 Claude Opus/Sonnet/Haiku 또는 로컬 **Ollama**(`llama3.2:1b`) 중 하나로 자동 라우팅
+  - Opus: 대규모·복잡 아키텍처 키워드 (MSA·풀스택·결제·플랫폼 등)
+  - Haiku: 짧은 일반 요청
+  - Ollama: 인사말 등 도구·추론이 불필요한 잡담 (로컬 무비용 처리)
+  - Sonnet: 기본값
+- **ClaudeCliExecutor (NEW_PROJECT·MODIFY)** → `DevJobService.selectModel()`이 Opus(복잡 아키텍처)/Sonnet(일반)/Haiku(단순 UI 수정)를 CLI `--model` 플래그로 전달 — ChatService 라우팅과는 별개 경로
 - AI 직접 호출 금지 — 반드시 `AiModelPort` 인터페이스를 통해 라우팅.
-- CLI 모델 선택: `DevJobService.selectModel()` → `--model` 플래그로 Claude CLI에 전달
 
 ## 커스텀 커맨드
 - `/new-feature <Name>` — 전 계층 스캐폴딩 (Domain → Port → Service → Controller)

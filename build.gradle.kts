@@ -7,6 +7,8 @@ plugins {
 group = "com.jarvis"
 version = "0.0.1-SNAPSHOT"
 
+extra["springAiVersion"] = "1.0.1"
+
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
@@ -23,6 +25,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
+    implementation("org.springframework.ai:spring-ai-starter-model-anthropic")
+    implementation("org.springframework.ai:spring-ai-starter-model-ollama")
+
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
 
@@ -30,6 +35,12 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.ai:spring-ai-bom:${property("springAiVersion")}")
+    }
 }
 
 tasks.withType<JavaCompile> {
